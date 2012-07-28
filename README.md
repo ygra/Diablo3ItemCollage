@@ -14,7 +14,7 @@ Better not look at it, it's horrible right now.
 
 ##Known issues (but report them anyway)
 
-* This has been tested for 1680×1050 and 1920×1080 resolutions. It might not work on smaller resolutions (untested as of now).
+* This has been tested for 1680Ã—1050 and 1920Ã—1080 resolutions. It might not work on smaller resolutions (untested as of now).
 * The item grabbing doesn't work very reliable in own auctions. Sometimes it works, sometimes it doesn't. Inventory, worn items and chest should work fine, though.
 
 ##License
