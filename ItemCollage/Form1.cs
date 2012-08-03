@@ -31,25 +31,35 @@ namespace ItemCollage
             HandleF1();
         }
 
-        private Rectangle FindFrame(Bitmap bmp, Point p)
+        private Rectangle FindFrame(Bitmap bmp, Point p, bool twoDim = true)
         {
+            var black = Color.Black.ToArgb();
             try
             {
-                var extentUp = p.Y -
-                    Enumerable.Range(0, p.Y)
-                        .TakeWhile(y => bmp.GetPixel(p.X, p.Y - y).ToArgb() == Color.Black.ToArgb())
-                        .Last();
-                var extentDown =
-                    Enumerable.Range(p.Y, bmp.Height - p.Y)
-                        .TakeWhile(y => bmp.GetPixel(p.X, y).ToArgb() == Color.Black.ToArgb())
-                        .Last();
+                var extentUp = p.Y;
+                var extentDown = p.Y;
+
+                if (twoDim)
+                {
+                    extentUp = p.Y -
+                        Enumerable.Range(0, p.Y)
+                            .TakeWhile(y => bmp.GetPixel(p.X, p.Y - y).ToArgb() == black)
+                            .Last();
+                    extentDown =
+                        Enumerable.Range(p.Y, bmp.Height - p.Y)
+                            .TakeWhile(y => bmp.GetPixel(p.X, y).ToArgb() == black)
+                            .Last();
+                }
+
                 var extentLeft = p.X -
                     Enumerable.Range(0, p.X)
-                        .TakeWhile(x => bmp.GetPixel(p.X - x, extentUp).ToArgb() == Color.Black.ToArgb() && bmp.GetPixel(p.X - x, extentDown).ToArgb() == Color.Black.ToArgb())
+                        .TakeWhile(x => bmp.GetPixel(p.X - x, extentUp).ToArgb() == black &&
+                                        bmp.GetPixel(p.X - x, extentDown).ToArgb() == black)
                         .Last();
                 var extentRight =
                     Enumerable.Range(p.X, bmp.Width)
-                        .TakeWhile(x => bmp.GetPixel(x, extentUp).ToArgb() == Color.Black.ToArgb() && bmp.GetPixel(x, extentDown).ToArgb() == Color.Black.ToArgb())
+                        .TakeWhile(x => bmp.GetPixel(x, extentUp).ToArgb() == black &&
+                                        bmp.GetPixel(x, extentDown).ToArgb() == black)
                         .Last();
                 return new Rectangle(extentLeft, extentUp, extentRight - extentLeft, extentDown - extentUp);
             }
@@ -71,22 +81,40 @@ namespace ItemCollage
 
         Image ExtractItem(Bitmap bmp, Point cursorPosition)
         {
-            var searchSize = new Size(200, 200);
-            var searchRect = new Rectangle(cursorPosition.X - searchSize.Width / 2, cursorPosition.Y - searchSize.Height / 2, searchSize.Width, searchSize.Height);
+            var searchSize = new Size(300, 300);
+            var searchRect = new Rectangle(cursorPosition.X - searchSize.Width / 2,
+                                           cursorPosition.Y - searchSize.Height / 2,
+                                           searchSize.Width, searchSize.Height);
 
-            // try finding the bounding box of the item
-            var black = from y in Range(searchRect.Top, searchRect.Bottom)
-                        from x in Range(searchRect.Left, searchRect.Right)
-                        where Range(-4, 4).All(d => bmp.IsBlackAt(x, y + d))
+            // first, we have to find the inner item box
+            var black = from y in Range(searchRect.Top, searchRect.Bottom, 5)
+                        from x in Range(searchRect.Left, searchRect.Right, 5)
+                        where Range(-5, 5).All(dx =>
+                            Range(-5, 5).All(dy => bmp.IsBlackAt(x + dx, y + dy)))
                         select new Point(x, y);
+            var frames = black.Select(p => FindFrame(bmp, p, false));
 
+            // then, try to find its left border
+            var inner = frames.OrderBy(f => f.Width).Last();
+
+            // and from there find the outer frame
+            var target = inner.Left - Enumerable.Range(1, inner.Left)
+                .FirstOrDefault(x => bmp.IsBlackAt(inner.Left - x, inner.Top));
+            // TODO: error handling
+            var outer = FindFrame(bmp, new Point(target - 1, inner.Top));
 
             Graphics g = Graphics.FromImage(bmp);
-            foreach (var p in black)
+            Pen[] colors = new Pen[] { Pens.Blue, Pens.White, Pens.Red, Pens.Green,
+                                       Pens.Beige, Pens.Purple, Pens.YellowGreen };
+            var i = 0;
+            foreach (var frame in frames)
             {
-                g.DrawEllipse(Pens.Red, p.X - 10, p.Y - 10, 20, 20);
-                bmp.SetPixel(p.X, p.Y, Color.Yellow);
+                g.DrawRectangle(colors[i], frame.Left, frame.Top, frame.Width, frame.Height + 1);
+                i = (i + 1) % colors.Length;
             }
+            outer.Height += 1;
+            g.DrawRectangle(Pens.Gold, outer);
+            g.DrawEllipse(Pens.Gold, target - 10, inner.Top - 10, 20, 20);
             g.Dispose();
 
             return bmp;
