@@ -72,11 +72,10 @@ namespace ItemCollage
         private IEnumerable<int> Range(int start, int end, int step = 1)
         {
             int i;
-            for (i = start; i < end; i += step)
+            for (i = start; i <= end; i += step)
             {
                 yield return i;
             }
-            if (i < end) yield return end;
         }
 
         Image ExtractItem(Bitmap bmp, Point cursorPosition)
