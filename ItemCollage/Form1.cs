@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.IO;
+using System.Diagnostics;
 
 namespace ItemCollage
 {
@@ -68,83 +69,47 @@ namespace ItemCollage
             if (i < end) yield return end;
         }
 
+        Image ExtractItem(Bitmap bmp, Point cursorPosition)
+        {
+            var searchSize = new Size(200, 200);
+            var searchRect = new Rectangle(cursorPosition.X - searchSize.Width / 2, cursorPosition.Y - searchSize.Height / 2, searchSize.Width, searchSize.Height);
+
+            // try finding the bounding box of the item
+            var black = from y in Range(searchRect.Top, searchRect.Bottom)
+                        from x in Range(searchRect.Left, searchRect.Right)
+                        where Range(-4, 4).All(d => bmp.IsBlackAt(x, y + d))
+                        select new Point(x, y);
+
+
+            Graphics g = Graphics.FromImage(bmp);
+            foreach (var p in black)
+            {
+                g.DrawEllipse(Pens.Red, p.X - 10, p.Y - 10, 20, 20);
+                bmp.SetPixel(p.X, p.Y, Color.Yellow);
+            }
+            g.Dispose();
+
+            return bmp;
+        }
+
         private void HandleF1()
         {
-            try
-            {
-                var screen = TakeScreenshot();
-                //pictureBox1.Image = screen;
-                var cursorPos = Cursor.Position;
+            Stopwatch sw = new Stopwatch();
 
-                Rectangle bounds;
+            var cursorPos = Cursor.Position;
 
-                if (cursorPos.X < screen.Width / 2)
-                {
-                    var blockSize = new Size(3, 8);
-                    var searchRect = new Rectangle(cursorPos.X - 20, cursorPos.Y - 210, 180, 350);
-                    // find block of black pixels
-                    var blocks = from y in Range(searchRect.Top, searchRect.Bottom, 8)
-                                 from x in Range(searchRect.Left, searchRect.Right)
-                                 where (from yy in Range(0, blockSize.Height, 3)
-                                        from xx in Range(0, blockSize.Width)
-                                        select screen.GetPixel(x + xx, y + yy)).All(c => c.ToArgb() == Color.Black.ToArgb())
-                                 select new Point(x, y);
-                    var leftEdge = (from b in blocks orderby b.X select b).First();
-                    var topEdge =
-                        Enumerable.Range(0, leftEdge.Y)
-                            .Reverse()
-                            .TakeWhile(y => screen.GetPixel(leftEdge.X, y).ToArgb() == Color.Black.ToArgb())
-                            .Last();
-                    var topLeftCorner = new Point(leftEdge.X, topEdge);
-                    var width =
-                        Enumerable.Range(topLeftCorner.X, 650)
-                            .TakeWhile(x => screen.GetPixel(x, topLeftCorner.Y).ToArgb() == Color.Black.ToArgb())
-                            .Count();
-                    var height =
-                        Enumerable.Range(topLeftCorner.Y, screen.Height - topLeftCorner.Y)
-                            .TakeWhile(y => screen.GetPixel(topLeftCorner.X, y).ToArgb() == Color.Black.ToArgb())
-                            .Count();
-                    bounds = new Rectangle(topLeftCorner, new Size(width, height));
-                }
-                else
-                {
-                    var blockSize = new Size(2, 30);
-                    var searchRect = new Rectangle(cursorPos.X - 160, cursorPos.Y - 210, 160, 210);
-                    // find block of black pixels
-                    var blocks = from y in Range(searchRect.Top, searchRect.Bottom, 4)
-                                 from x in Range(searchRect.Left, searchRect.Right)
-                                 where (from yy in Range(0, blockSize.Height, 5)
-                                        from xx in Range(0, blockSize.Width)
-                                        select screen.GetPixel(x - xx, y - yy)).All(c => c.ToArgb() == Color.Black.ToArgb())
-                                 select new Point(x, y);
-                    var rightEdge = (from b in blocks orderby b.X select b).Last();
-                    var topEdge =
-                        Enumerable.Range(0, rightEdge.Y)
-                            .Reverse()
-                            .TakeWhile(y => screen.GetPixel(rightEdge.X, y).ToArgb() == Color.Black.ToArgb())
-                            .Last();
-                    var topRightCorner = new Point(rightEdge.X, topEdge);
-                    var width =
-                        Enumerable.Range(0, topRightCorner.X)
-                            .TakeWhile(x => screen.GetPixel(topRightCorner.X - x, topRightCorner.Y).ToArgb() == Color.Black.ToArgb())
-                            .Count();
-                    var height =
-                        Enumerable.Range(topRightCorner.Y, screen.Height - topRightCorner.Y)
-                            .TakeWhile(y => screen.GetPixel(topRightCorner.X, y).ToArgb() == Color.Black.ToArgb())
-                            .Count();
-                    bounds = new Rectangle(topRightCorner.X - width + 1, topRightCorner.Y, width, height);
-                }
+            sw.Start();
+            this.Opacity = 0;
+            var screen = TakeScreenshot(ref cursorPos);
+            this.Opacity = 1;
 
-                if (bounds.Width < 100) return;
+            var item = ExtractItem(screen, cursorPos);
+            sw.Stop();
 
-                Bitmap item = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format24bppRgb);
-                Graphics g = Graphics.FromImage(item);
-                g.DrawImage(screen, new Rectangle(0, 0, bounds.Width, bounds.Height), bounds, GraphicsUnit.Pixel);
-                pictureBox1.Image = item;
-                items.Add(item);
-                UpdateLabel();
-            }
-            catch { }
+            pictureBox1.Image = item;
+            Clipboard.SetImage(item);
+
+            label1.Text = sw.Elapsed.ToString();
         }
 
         private void UpdateLabel()
@@ -159,9 +124,10 @@ namespace ItemCollage
             base.WndProc(ref m);
         }
 
-        private Bitmap TakeScreenshot()
+        private Bitmap TakeScreenshot(ref Point p)
         {
-            var bounds = Screen.PrimaryScreen.Bounds;
+            var bounds = Screen.FromPoint(p).Bounds;
+            p.Offset(-bounds.X, -bounds.Y);
             Bitmap bmp = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format24bppRgb);
             var g = Graphics.FromImage(bmp);
             g.CopyFromScreen(bounds.X, bounds.Y, 0, 0, new Size(bounds.Width, bounds.Height));
@@ -190,8 +156,7 @@ namespace ItemCollage
             {
                 if (items.Count == 0) return;
 
-                //int numCols = items.Count > 12 ? 4 : 3;
-                int numCols = (int)Math.Min(Math.Ceiling(Math.Sqrt(items.Count)), 4); // Ventero
+                int numCols = (int)Math.Min(Math.Ceiling(Math.Sqrt(items.Count)), 4);
                 int w = items[0].Width;
                 var colLengths = new int[numCols];
 
@@ -226,5 +191,48 @@ namespace ItemCollage
             }
             catch { }
         }
+    }
+}
+
+public static class Extensions
+{
+    /// <summary>
+    ///     Yields a sequence of points that spiral around a center point within a rectangle of the given size.
+    ///     Code translated from http://stackoverflow.com/a/398302/73070.
+    /// </summary>
+    /// <param name="center">The center point of the spiral.</param>
+    /// <param name="sizeX">The width of the resulting rectangle.</param>
+    /// <param name="sizeY">The height of the resulting rectangle.</param>
+    /// <returns>An enumerator that visits all points in the given rectangle in a spiral.</returns>
+    public static IEnumerable<Point> Spiral(this Point center, int sizeX, int sizeY)
+    {
+        int x = 0, y = 0;
+        int dx = 0, dy = -1;
+
+        var maxDim = Math.Max(sizeX, sizeY);
+
+        for (int i = 0; i < maxDim * maxDim; i++)
+        {
+            if ((-sizeX / 2 < x && x <= sizeX / 2) && (-sizeY / 2 < y && y <= sizeY / 2))
+                yield return new Point(center.X + x, center.Y + y);
+
+            if (x == y || (x < 0 && x == -y) || (x > 0 && x == 1 - y))
+            {
+                var temp = dx;
+                dx = -dy;
+                dy = temp;
+            }
+            x += dx;
+            y += dy;
+        }
+    }
+
+    public static bool IsBlackAt(this Bitmap b, int x, int y)
+    {
+        if (x < 0 || y < 0 || x >= b.Width || y >= b.Height)
+            return false;
+
+        Color c = b.GetPixel(x, y);
+        return c.R == 0 && c.G == 0 && c.B == 0;
     }
 }
