@@ -34,39 +34,33 @@ namespace ItemCollage
         private Rectangle FindFrame(Bitmap bmp, Point p, bool twoDim = true)
         {
             var black = Color.Black.ToArgb();
-            try
-            {
-                var extentUp = p.Y;
-                var extentDown = p.Y;
 
-                if (twoDim)
-                {
-                    extentUp = p.Y -
-                        Enumerable.Range(0, p.Y)
-                            .TakeWhile(y => bmp.GetPixel(p.X, p.Y - y).ToArgb() == black)
-                            .Last();
-                    extentDown =
-                        Enumerable.Range(p.Y, bmp.Height - p.Y)
-                            .TakeWhile(y => bmp.GetPixel(p.X, y).ToArgb() == black)
-                            .Last();
-                }
+            var extentUp = p.Y;
+            var extentDown = p.Y;
 
-                var extentLeft = p.X -
-                    Enumerable.Range(0, p.X)
-                        .TakeWhile(x => bmp.GetPixel(p.X - x, extentUp).ToArgb() == black &&
-                                        bmp.GetPixel(p.X - x, extentDown).ToArgb() == black)
-                        .Last();
-                var extentRight =
-                    Enumerable.Range(p.X, bmp.Width)
-                        .TakeWhile(x => bmp.GetPixel(x, extentUp).ToArgb() == black &&
-                                        bmp.GetPixel(x, extentDown).ToArgb() == black)
-                        .Last();
-                return new Rectangle(extentLeft, extentUp, extentRight - extentLeft, extentDown - extentUp);
-            }
-            catch
+            if (twoDim)
             {
-                return new Rectangle();
+                extentUp = p.Y -
+                    Enumerable.Range(0, p.Y)
+                        .TakeWhile(y => bmp.GetPixel(p.X, p.Y - y).ToArgb() == black)
+                        .Last();
+                extentDown =
+                    Enumerable.Range(p.Y, bmp.Height - p.Y)
+                        .TakeWhile(y => bmp.GetPixel(p.X, y).ToArgb() == black)
+                        .Last();
             }
+
+            var extentLeft = p.X -
+                Enumerable.Range(0, p.X)
+                    .TakeWhile(x => bmp.GetPixel(p.X - x, extentUp).ToArgb() == black &&
+                                    bmp.GetPixel(p.X - x, extentDown).ToArgb() == black)
+                    .Last();
+            var extentRight =
+                Enumerable.Range(p.X, bmp.Width)
+                    .TakeWhile(x => bmp.GetPixel(x, extentUp).ToArgb() == black &&
+                                    bmp.GetPixel(x, extentDown).ToArgb() == black)
+                    .Last();
+            return new Rectangle(extentLeft, extentUp, extentRight - extentLeft, extentDown - extentUp);
         }
 
         private IEnumerable<int> Range(int start, int end, int step = 1)
