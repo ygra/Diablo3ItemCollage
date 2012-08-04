@@ -94,7 +94,7 @@ namespace ItemCollage
             var frames = black.Select(p => FindFrame(bmp, p, false));
 
             // then, try to find its left border
-            var inner = frames.OrderBy(f => f.Width).Last();
+            var inner = frames.OrderBy(f => f.Width).LastOrDefault();
 
             // and from there find the outer frame
             var target = inner.Left - Enumerable.Range(1, inner.Left)
@@ -129,6 +129,12 @@ namespace ItemCollage
             this.Opacity = 0;
             var screen = TakeScreenshot(ref cursorPos);
             this.Opacity = 1;
+
+            // save picture for future testing
+            var fileName = string.Format("itemat-{0:yyyy-MM-dd-HH-mm-ss}-P{1}-{2}.png", DateTime.UtcNow, cursorPos.X, cursorPos.Y);
+            var picFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures); 
+            var file = Path.Combine(picFolder, fileName);
+            screen.Save(file);
 
             var item = ExtractItem(screen, cursorPos);
             sw.Stop();
