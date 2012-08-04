@@ -214,7 +214,7 @@ namespace ItemCollage
 
                 foreach (var item in items)
                 {
-                    var col = Range(0, numCols).Select(i => new { i = i, h = colLengths[i] }).OrderBy(k => k.h).First().i;
+                    var col = Range(0, numCols - 1).Select(i => new { i = i, h = colLengths[i] }).OrderBy(k => k.h).First().i;
                     colLengths[col] += item.Height;
                 }
 
@@ -227,7 +227,7 @@ namespace ItemCollage
 
                 foreach (var item in items)
                 {
-                    var col = Range(0, numCols).Select(i => new { i = i, h = colLengths[i] }).OrderBy(k => k.h).First().i;
+                    var col = Range(0, numCols - 1).Select(i => new { i = i, h = colLengths[i] }).OrderBy(k => k.h).First().i;
                     g.DrawImageUnscaledAndClipped(item, new Rectangle(w * col, colLengths[col], w, item.Height));
                     g.DrawString(itemIndex.ToString(), new Font("Arial", 20, FontStyle.Bold), Brushes.White, col * w + 10, colLengths[col] + 10);
                     colLengths[col] += item.Height;
