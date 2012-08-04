@@ -122,8 +122,12 @@ namespace ItemCollage
             var rightFrame = FindFrame(bmp, rightTarget, true);
 
             var itemFrame = rightFrame;
-            if(leftFrame.Width > rightFrame.Width)
+            if (leftFrame.Width > rightFrame.Width ||
+                leftFrame.Width == rightFrame.Width &&
+                leftFrame.Height > rightFrame.Height)
+            {
                 itemFrame = leftFrame;
+            }
 
             Bitmap item = new Bitmap(itemFrame.Width, itemFrame.Height,
                 PixelFormat.Format24bppRgb);
