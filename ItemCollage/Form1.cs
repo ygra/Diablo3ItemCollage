@@ -33,34 +33,41 @@ namespace ItemCollage
 
         private Rectangle FindFrame(Bitmap bmp, Point p, bool twoDim = true)
         {
-            var black = Color.Black.ToArgb();
-
             var extentUp = p.Y;
             var extentDown = p.Y;
+            var skip = 0;
+            const int MAX_SKIP = 3;
 
             if (twoDim)
             {
                 extentUp = p.Y -
                     Enumerable.Range(0, p.Y)
-                        .TakeWhile(y => bmp.GetPixel(p.X, p.Y - y).ToArgb() == black)
-                        .Last();
+                        .TakeWhile(y => bmp.IsBlackAt(p.X, p.Y - y) ||
+                            ++skip < MAX_SKIP)
+                        .Last(y => bmp.IsBlackAt(p.X, p.Y - y));
+
                 extentDown =
                     Enumerable.Range(p.Y, bmp.Height - p.Y)
-                        .TakeWhile(y => bmp.GetPixel(p.X, y).ToArgb() == black)
-                        .Last();
+                        .TakeWhile(y => bmp.IsBlackAt(p.X, y) ||
+                            ++skip < MAX_SKIP)
+                        .Last(y => bmp.IsBlackAt(p.X, y));
             }
 
             var extentLeft = p.X -
                 Enumerable.Range(0, p.X)
-                    .TakeWhile(x => bmp.GetPixel(p.X - x, extentUp).ToArgb() == black &&
-                                    bmp.GetPixel(p.X - x, extentDown).ToArgb() == black)
+                    .TakeWhile(x => bmp.IsBlackAt(p.X - x, extentUp) &&
+                                    bmp.IsBlackAt(p.X - x, extentDown))
                     .Last();
+
             var extentRight =
                 Enumerable.Range(p.X, bmp.Width)
-                    .TakeWhile(x => bmp.GetPixel(x, extentUp).ToArgb() == black &&
-                                    bmp.GetPixel(x, extentDown).ToArgb() == black)
+                    .TakeWhile(x => bmp.IsBlackAt(x, extentUp) &&
+                                    bmp.IsBlackAt(x, extentDown))
                     .Last();
-            return new Rectangle(extentLeft, extentUp, extentRight - extentLeft, extentDown - extentUp);
+
+            return new Rectangle(extentLeft, extentUp,
+                                 extentRight - extentLeft,
+                                 extentDown - extentUp);
         }
 
         private Point FindOuter(Bitmap bmp, int x, int y, int step = 1, int searchWidth = 20)
