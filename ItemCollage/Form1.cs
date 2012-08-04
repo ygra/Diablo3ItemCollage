@@ -225,7 +225,6 @@ namespace ItemCollage
 
                 Bitmap b = new Bitmap(numCols * w, colLengths.Max(), PixelFormat.Format16bppRgb555);
                 Graphics g = Graphics.FromImage(b);
-                //g.FillRectangle(Brushes.Black, 0, 0, b.Width, b.Height);
                 colLengths = new int[numCols];
 
                 int itemIndex = 1;
@@ -253,37 +252,6 @@ namespace ItemCollage
 
 public static class Extensions
 {
-    /// <summary>
-    ///     Yields a sequence of points that spiral around a center point within a rectangle of the given size.
-    ///     Code translated from http://stackoverflow.com/a/398302/73070.
-    /// </summary>
-    /// <param name="center">The center point of the spiral.</param>
-    /// <param name="sizeX">The width of the resulting rectangle.</param>
-    /// <param name="sizeY">The height of the resulting rectangle.</param>
-    /// <returns>An enumerator that visits all points in the given rectangle in a spiral.</returns>
-    public static IEnumerable<Point> Spiral(this Point center, int sizeX, int sizeY)
-    {
-        int x = 0, y = 0;
-        int dx = 0, dy = -1;
-
-        var maxDim = Math.Max(sizeX, sizeY);
-
-        for (int i = 0; i < maxDim * maxDim; i++)
-        {
-            if ((-sizeX / 2 < x && x <= sizeX / 2) && (-sizeY / 2 < y && y <= sizeY / 2))
-                yield return new Point(center.X + x, center.Y + y);
-
-            if (x == y || (x < 0 && x == -y) || (x > 0 && x == 1 - y))
-            {
-                var temp = dx;
-                dx = -dy;
-                dy = temp;
-            }
-            x += dx;
-            y += dy;
-        }
-    }
-
     public static bool IsBlackAt(this Bitmap b, int x, int y)
     {
         if (x < 0 || y < 0 || x >= b.Width || y >= b.Height)
