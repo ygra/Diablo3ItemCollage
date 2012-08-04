@@ -243,8 +243,8 @@ namespace ItemCollage
                 var fileName = string.Format("items-{0:yyyy-MM-dd-HH-mm-ss}.png", DateTime.UtcNow);
                 var file = Path.Combine(picFolder, fileName);
                 b.Save(file);
-                items.Clear();
                 UpdateLabel();
+                items.Clear();
             }
             catch { }
         }
