@@ -196,10 +196,13 @@ namespace ItemCollage
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             if (items.Count == 0) return;
+
             items.RemoveAt(items.Count - 1);
+
             if (items.Count > 0)
                 pictureBox1.Image = items[items.Count - 1];
-            else pictureBox1.Image = null;
+            else
+                pictureBox1.Image = null;
 
             UpdateLabel();
         }
