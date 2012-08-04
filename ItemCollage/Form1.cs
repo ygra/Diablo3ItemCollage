@@ -219,7 +219,7 @@ namespace ItemCollage
 
                 foreach (var item in items)
                 {
-                    var col = Range(0, numCols - 1).Select(i => new { i = i, h = colLengths[i] }).OrderBy(k => k.h).First().i;
+                    var col = Range(0, numCols - 1).MinBy(i => colLengths[i]);
                     colLengths[col] += item.Height;
                 }
 
@@ -231,7 +231,7 @@ namespace ItemCollage
 
                 foreach (var item in items)
                 {
-                    var col = Range(0, numCols - 1).Select(i => new { i = i, h = colLengths[i] }).OrderBy(k => k.h).First().i;
+                    var col = Range(0, numCols - 1).MinBy(i => colLengths[i]);
                     g.DrawImageUnscaledAndClipped(item, new Rectangle(w * col, colLengths[col], w, item.Height));
                     g.DrawString(itemIndex.ToString(), new Font("Arial", 20, FontStyle.Bold), Brushes.White, col * w + 10, colLengths[col] + 10);
                     colLengths[col] += item.Height;
@@ -252,6 +252,26 @@ namespace ItemCollage
 
 public static class Extensions
 {
+
+    private static IEnumerable<KeyValuePair<TVal, TMapped>> MapSortBy<TVal, TMapped>(
+        this IEnumerable<TVal> source, Func<TVal, TMapped> selector)
+    {
+        return source.Select(o => new KeyValuePair<TVal, TMapped>(o, selector(o)))
+            .OrderBy(a => a.Value);
+    }
+
+    public static TVal MaxBy<TVal, TMapped>(this IEnumerable<TVal> source,
+        Func<TVal, TMapped> selector)
+    {
+        return source.MapSortBy(selector).Last().Key;
+    }
+
+    public static TVal MinBy<TVal, TMapped>(this IEnumerable<TVal> source,
+    Func<TVal, TMapped> selector)
+    {
+        return source.MapSortBy(selector).First().Key;
+    }
+
     public static bool IsBlackAt(this Bitmap b, int x, int y)
     {
         if (x < 0 || y < 0 || x >= b.Width || y >= b.Height)
