@@ -63,6 +63,22 @@ namespace ItemCollage
             return new Rectangle(extentLeft, extentUp, extentRight - extentLeft, extentDown - extentUp);
         }
 
+        private Point FindOuter(Bitmap bmp, int x, int y, int step = 1, int searchWidth = 20)
+        {
+            // TODO: error handling
+            var delta = step < 0 ? -1 : 1;
+            var target = Range(1, searchWidth, Math.Abs(step))
+                .FirstOrDefault(dx => bmp.IsBlackAt(x + delta * dx, y));
+            target = x + delta * target;
+
+            // if possible, move slightly to the left or right to get to the
+            // middle of the frame
+            if (bmp.IsBlackAt(target + delta, y))
+                target += delta;
+
+            return new Point(target, y);
+        }
+
         private IEnumerable<int> Range(int start, int end, int step = 1)
         {
             int i;
@@ -80,37 +96,35 @@ namespace ItemCollage
                                            searchSize.Width, searchSize.Height);
 
             // first, we have to find the inner item box
-            var black = from y in Range(searchRect.Top, searchRect.Bottom, 5)
-                        from x in Range(searchRect.Left, searchRect.Right, 5)
+            var black = from y in Range(searchRect.Top, searchRect.Bottom, 3)
+                        from x in Range(searchRect.Left, searchRect.Right, 3)
                         where Range(-5, 5).All(dx =>
                             Range(-5, 5).All(dy => bmp.IsBlackAt(x + dx, y + dy)))
                         select new Point(x, y);
             var frames = black.Select(p => FindFrame(bmp, p, false));
 
-            // then, try to find its left border
-            var inner = frames.OrderBy(f => f.Width).LastOrDefault();
+            // then, its left and right border
+            var left = frames.OrderBy(f => f.Left).FirstOrDefault();
+            var right = frames.OrderBy(f => f.Right).LastOrDefault();
 
             // and from there find the outer frame
-            var target = inner.Left - Enumerable.Range(1, inner.Left)
-                .FirstOrDefault(x => bmp.IsBlackAt(inner.Left - x, inner.Top));
-            // TODO: error handling
-            var outer = FindFrame(bmp, new Point(target - 1, inner.Top));
+            var leftTarget = FindOuter(bmp, left.Left, left.Top, -1);
+            var leftFrame = FindFrame(bmp, leftTarget, true);
 
-            Graphics g = Graphics.FromImage(bmp);
-            Pen[] colors = new Pen[] { Pens.Blue, Pens.White, Pens.Red, Pens.Green,
-                                       Pens.Beige, Pens.Purple, Pens.YellowGreen };
-            var i = 0;
-            foreach (var frame in frames)
-            {
-                g.DrawRectangle(colors[i], frame.Left, frame.Top, frame.Width, frame.Height + 1);
-                i = (i + 1) % colors.Length;
-            }
-            outer.Height += 1;
-            g.DrawRectangle(Pens.Gold, outer);
-            g.DrawEllipse(Pens.Gold, target - 10, inner.Top - 10, 20, 20);
+            var rightTarget = FindOuter(bmp, right.Right, right.Top);
+            var rightFrame = FindFrame(bmp, rightTarget, true);
+
+            var itemFrame = rightFrame;
+            if(leftFrame.Width > rightFrame.Width)
+                itemFrame = leftFrame;
+
+            Bitmap item = new Bitmap(itemFrame.Width, itemFrame.Height,
+                PixelFormat.Format24bppRgb);
+            Graphics g = Graphics.FromImage(item);
+            g.DrawImage(bmp, 0, 0, itemFrame, GraphicsUnit.Pixel);
             g.Dispose();
 
-            return bmp;
+            return item;
         }
 
         private void HandleF1()
