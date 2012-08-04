@@ -158,6 +158,7 @@ namespace ItemCollage
             var item = ExtractItem(screen, cursorPos);
             sw.Stop();
 
+            items.Add(item);
             pictureBox1.Image = item;
             Clipboard.SetImage(item);
 
