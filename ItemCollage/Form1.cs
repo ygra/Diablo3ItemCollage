@@ -38,6 +38,8 @@ namespace ItemCollage
             var skip = 0;
             const int MAX_SKIP = 3;
 
+            if (!bmp.IsBlackAt(p.X, p.Y)) return new Rectangle();
+
             if (twoDim)
             {
                 extentUp = p.Y -
@@ -113,6 +115,7 @@ namespace ItemCollage
             // then, its left and right border
             var left = frames.OrderBy(f => f.Left).FirstOrDefault();
             var right = frames.OrderBy(f => f.Right).LastOrDefault();
+            if (left.Width == 0 && right.Width == 0) return null;
 
             // and from there find the outer frame
             var leftTarget = FindOuter(bmp, left.Left, left.Top, -1);
@@ -128,6 +131,8 @@ namespace ItemCollage
             {
                 itemFrame = leftFrame;
             }
+
+            if (itemFrame.Width == 0) return null;
 
             Bitmap item = new Bitmap(itemFrame.Width, itemFrame.Height,
                 PixelFormat.Format24bppRgb);
@@ -157,6 +162,12 @@ namespace ItemCollage
 
             var item = ExtractItem(screen, cursorPos);
             sw.Stop();
+
+            if (item == null)
+            {
+                label1.Text = "No item found";
+                return;
+            }
 
             items.Add(item);
             pictureBox1.Image = item;
