@@ -156,6 +156,7 @@ namespace ItemCollage
 
             var item = ExtractItem(screen, cursorPos);
             sw.Stop();
+            Debug.Print("Time for extraction: " + sw.Elapsed.ToString());
 
             if (item == null)
             {
@@ -167,13 +168,13 @@ namespace ItemCollage
             pictureBox1.Image = item;
             Clipboard.SetImage(item);
 
-            label1.Text = sw.Elapsed.ToString();
+            UpdateLabel();
         }
 
         private void UpdateLabel()
         {
             label1.Text = string.Format("{0} item{1} copied.", items.Count,
-                items.Count > 1 ? "s" : "");
+                items.Count != 1 ? "s" : "");
         }
 
         protected override void WndProc(ref Message m)
@@ -247,8 +248,9 @@ namespace ItemCollage
                 var fileName = string.Format("items-{0:yyyy-MM-dd-HH-mm-ss}.png", DateTime.UtcNow);
                 var file = Path.Combine(picFolder, fileName);
                 b.Save(file);
-                UpdateLabel();
                 items.Clear();
+                pictureBox1.Image = null;
+                label1.Text = "Collage saved";
             }
             catch { }
         }
