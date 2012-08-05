@@ -154,12 +154,6 @@ namespace ItemCollage
             var screen = TakeScreenshot(ref cursorPos);
             this.Opacity = 1;
 
-            // save picture for future testing
-            var fileName = string.Format("itemat-{0:yyyy-MM-dd-HH-mm-ss}-P{1}-{2}.png", DateTime.UtcNow, cursorPos.X, cursorPos.Y);
-            var picFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-            var file = Path.Combine(picFolder, fileName);
-            screen.Save(file);
-
             var item = ExtractItem(screen, cursorPos);
             sw.Stop();
 
