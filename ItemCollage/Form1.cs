@@ -248,6 +248,7 @@ namespace ItemCollage
                 var fileName = string.Format("items-{0:yyyy-MM-dd-HH-mm-ss}.png", DateTime.UtcNow);
                 var file = Path.Combine(picFolder, fileName);
                 b.Save(file);
+                Clipboard.SetImage(b);
                 items.Clear();
                 pictureBox1.Image = null;
                 label1.Text = "Collage saved";
