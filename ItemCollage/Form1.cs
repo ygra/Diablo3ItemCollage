@@ -130,7 +130,7 @@ namespace ItemCollage
                 itemFrame = leftFrame;
             }
 
-            if (itemFrame.Width < 100 || itemFrame.Height < 100)
+            if (itemFrame.Width < 100 || itemFrame.Height < 50)
                 return null;
 
             Bitmap item = new Bitmap(itemFrame.Width, itemFrame.Height,
