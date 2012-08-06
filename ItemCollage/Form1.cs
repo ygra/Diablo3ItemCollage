@@ -108,11 +108,16 @@ namespace ItemCollage
                         where Range(-5, 5).All(dx =>
                             Range(-5, 5).All(dy => bmp.IsBlackAt(x + dx, y + dy)))
                         select new Point(x, y);
-            var frames = black.Select(p => FindFrame(bmp, p, false));
+            var frames = black.Select(p => FindFrame(bmp, p, false)).
+                OrderBy(f => f.Width);
+
+            // reject all frames that aren't full width
+            var fullWidth = frames.LastOrDefault().Width;
+            var fullFrames = frames.Where(f => f.Width == fullWidth);
 
             // then, its left and right border
-            var left = frames.OrderBy(f => f.Left).FirstOrDefault();
-            var right = frames.OrderBy(f => f.Right).LastOrDefault();
+            var left = fullFrames.OrderBy(f => f.Left).FirstOrDefault();
+            var right = fullFrames.OrderBy(f => f.Right).LastOrDefault();
             if (left.Width == 0 && right.Width == 0) return null;
 
             // and from there find the outer frame
