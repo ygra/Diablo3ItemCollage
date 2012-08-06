@@ -97,14 +97,14 @@ namespace ItemCollage
 
         Image ExtractItem(Bitmap bmp, Point cursorPosition)
         {
-            var searchSize = new Size(300, 300);
+            var searchSize = new Size(400, 400);
             var searchRect = new Rectangle(cursorPosition.X - searchSize.Width / 2,
                                            cursorPosition.Y - searchSize.Height / 2,
                                            searchSize.Width, searchSize.Height);
 
             // first, we have to find the inner item box
-            var black = from y in Range(searchRect.Top, searchRect.Bottom, 3)
-                        from x in Range(searchRect.Left, searchRect.Right, 3)
+            var black = from y in Range(searchRect.Top, searchRect.Bottom, 5)
+                        from x in Range(searchRect.Left, searchRect.Right, 5)
                         where Range(-5, 5).All(dx =>
                             Range(-5, 5).All(dy => bmp.IsBlackAt(x + dx, y + dy)))
                         select new Point(x, y);
