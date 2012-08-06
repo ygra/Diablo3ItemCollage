@@ -130,7 +130,8 @@ namespace ItemCollage
                 itemFrame = leftFrame;
             }
 
-            if (itemFrame.Width == 0) return null;
+            if (itemFrame.Width < 100 || itemFrame.Height < 100)
+                return null;
 
             Bitmap item = new Bitmap(itemFrame.Width, itemFrame.Height,
                 PixelFormat.Format24bppRgb);
