@@ -57,14 +57,12 @@ namespace ItemCollage
 
             var extentLeft = p.X -
                 Enumerable.Range(0, p.X)
-                    .TakeWhile(x => bmp.IsBlackAt(p.X - x, extentUp) &&
-                                    bmp.IsBlackAt(p.X - x, extentDown))
+                    .TakeWhile(x => bmp.IsBlackAt(p.X - x, extentDown))
                     .Last();
 
             var extentRight =
                 Enumerable.Range(p.X, bmp.Width)
-                    .TakeWhile(x => bmp.IsBlackAt(x, extentUp) &&
-                                    bmp.IsBlackAt(x, extentDown))
+                    .TakeWhile(x => bmp.IsBlackAt(x, extentDown))
                     .Last();
 
             return new Rectangle(extentLeft, extentUp,
