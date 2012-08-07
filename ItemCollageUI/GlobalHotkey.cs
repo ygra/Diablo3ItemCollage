@@ -34,6 +34,14 @@ namespace ItemCollage
             return modifier ^ key ^ hWnd.ToInt32();
         }
 
+        public Keys Key
+        {
+            get
+            {
+                return (Keys)key;
+            }
+        }
+
         [DllImport("user32.dll")]
         private static extern bool RegisterHotKey(IntPtr hWnd, int id, int fsModifiers, int vk);
 

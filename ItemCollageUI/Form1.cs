@@ -15,25 +15,31 @@ namespace ItemCollage
 {
     public partial class Form1 : Form
     {
-        GlobalHotkey F1;
+        IDictionary<GlobalHotkey, Action> hotkeys;
         List<Image> items = new List<Image>();
 
         public Form1()
         {
             InitializeComponent();
-            F1 = new GlobalHotkey(Constants.NOMOD, Keys.F1, this);
-            F1.Register();
+
+            // Initialise hotkeys
+            hotkeys = new Dictionary<GlobalHotkey, Action> {
+                { new GlobalHotkey(Constants.NOMOD, Keys.F1, this), GrabItem }
+            };
+
+            // register hotkeys
+            foreach (var hk in hotkeys)
+                hk.Key.Register();
+
             UpdateLabel();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            HandleF1();
+            GrabItem();
         }
 
-
-
-        private void HandleF1()
+        private void GrabItem()
         {
             Stopwatch sw = new Stopwatch();
 
@@ -71,7 +77,11 @@ namespace ItemCollage
         protected override void WndProc(ref Message m)
         {
             if (m.Msg == Constants.WM_HOTKEY_MSG_ID)
-                HandleF1();
+            {
+                var key = (Keys)((int)m.LParam >> 16);
+                foreach (var hotkey in hotkeys.Where(hk => hk.Key.Key == key))
+                    hotkey.Value();
+            }
             base.WndProc(ref m);
         }
 
@@ -87,7 +97,8 @@ namespace ItemCollage
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            F1.Unregister();
+            foreach (var hk in hotkeys)
+                hk.Key.Unregister();
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
