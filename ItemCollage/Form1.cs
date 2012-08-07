@@ -103,11 +103,20 @@ namespace ItemCollage
                                            searchSize.Width, searchSize.Height);
 
             // first, we have to find the inner item box
-            var black = from y in Range(searchRect.Top, searchRect.Bottom, 5)
-                        from x in Range(searchRect.Left, searchRect.Right, 5)
-                        where Range(-5, 5).All(dx =>
-                            Range(-5, 5).All(dy => bmp.IsBlackAt(x + dx, y + dy)))
-                        select new Point(x, y);
+            var black = new List<Point>();
+            foreach(var y in Range(searchRect.Top, searchRect.Bottom, 5))
+            {
+                foreach (var x in Range(searchRect.Left, searchRect.Right, 20))
+                {
+                    if (Range(-5, 5).All(dx =>
+                        Range(-5, 5).All(dy => bmp.IsBlackAt(x + dx, y + dy))))
+                    {
+                        black.Add(new Point(x, y));
+                        break;
+                    }
+                }
+            }
+
             var frames = black.Select(p => FindFrame(bmp, p, false)).
                 OrderBy(f => f.Width);
 
