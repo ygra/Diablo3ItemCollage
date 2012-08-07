@@ -18,13 +18,13 @@ namespace ItemCollage
         public static TVal MaxBy<TVal, TMapped>(this IEnumerable<TVal> source,
             Func<TVal, TMapped> selector)
         {
-            return source.MapSortBy(selector).Last().Key;
+            return source.MapSortBy(selector).LastOrDefault().Key;
         }
 
         public static TVal MinBy<TVal, TMapped>(this IEnumerable<TVal> source,
         Func<TVal, TMapped> selector)
         {
-            return source.MapSortBy(selector).First().Key;
+            return source.MapSortBy(selector).FirstOrDefault().Key;
         }
 
         public static bool IsBlackAt(this Bitmap b, int x, int y)
