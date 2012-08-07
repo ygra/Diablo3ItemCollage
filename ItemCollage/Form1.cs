@@ -65,6 +65,13 @@ namespace ItemCollage
                     .TakeWhile(x => bmp.IsBlackAt(x, extentDown))
                     .Last();
 
+            skip = 0;
+            if (twoDim && !Range(extentUp, extentDown).All(
+                    y => bmp.IsBlackAt(extentRight, y) &&
+                         bmp.IsBlackAt(extentLeft, y) ||
+                         ++skip < MAX_SKIP))
+                return new Rectangle();
+
             return new Rectangle(extentLeft, extentUp,
                                  extentRight - extentLeft,
                                  extentDown - extentUp);
