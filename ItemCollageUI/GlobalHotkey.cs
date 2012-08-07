@@ -40,6 +40,13 @@ namespace ItemCollage
             {
                 return (Keys)key;
             }
+            set
+            {
+                Unregister();
+                key = (int)value;
+                id = this.GetHashCode();
+                Register();
+            }
         }
 
         [DllImport("user32.dll")]
