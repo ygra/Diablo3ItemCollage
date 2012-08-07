@@ -35,5 +35,28 @@ namespace ItemCollage
             Color c = b.GetPixel(x, y);
             return c.R == 0 && c.G == 0 && c.B == 0;
         }
+
+        public class FuncEqualityComparer<TSource, TResult> : EqualityComparer<TSource>
+        {
+            Func<TSource, TResult> func;
+            public FuncEqualityComparer(Func<TSource, TResult> func)
+            {
+                this.func = func;
+            }
+
+            public override bool Equals(TSource x, TSource y)
+            {
+                return func(x).Equals(func(y));
+            }
+            public override int GetHashCode(TSource obj)
+            {
+                return func(obj).GetHashCode();
+            }
+        }
+
+        public static IEnumerable<TSource> Distinct<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> func)
+        {
+            return source.Distinct(new FuncEqualityComparer<TSource, TResult>(func));
+        }
     }
 }
