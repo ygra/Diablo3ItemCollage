@@ -87,7 +87,7 @@ namespace ItemCollage
 
             // if possible, move slightly to the left or right to get to the
             // middle of the frame
-            if (bmp.IsBlackAt(target + delta, y))
+            while (bmp.IsBlackAt(target + delta, y))
                 target += delta;
 
             return new Point(target, y);
