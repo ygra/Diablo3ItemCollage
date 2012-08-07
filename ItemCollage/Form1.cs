@@ -107,54 +107,63 @@ namespace ItemCollage
             }
         }
 
+        List<Point> FindBlackSquares(Bitmap bmp, IEnumerable<int> horizontal,
+            IEnumerable<int> vertical, int size = 5)
+        {
+            var black = new List<Point>();
+            foreach (var y in vertical)
+            {
+                foreach (var x in horizontal)
+                {
+                    if (Range(-size, size).All(dx =>
+                        Range(-size, size).All(dy => bmp.IsBlackAt(x + dx, y + dy))))
+                    {
+                        black.Add(new Point(x, y));
+                        // since we move outwards from the cursor, we can safely
+                        // break here without risking not to hit the actual item
+                        // frame
+                        break;
+                    }
+                }
+            }
+            return black;
+        }
+
         Image ExtractItem(Bitmap bmp, Point cursorPosition)
         {
-            var searchSize = new Size(400, 400);
+            var searchSize = new Size(1200, 400);
             var searchRect = new Rectangle(cursorPosition.X - searchSize.Width / 2,
                                            cursorPosition.Y - searchSize.Height / 2,
                                            searchSize.Width, searchSize.Height);
 
             // first, we have to find the inner item box
+            // we do this by moving outwards from the cursor, that way we can
+            // be sure to hit the actual item first, instead of a potential
+            // equipped item popup
+            var vertical = Range(searchRect.Top, searchRect.Bottom, 5);
+            var left = Range(cursorPosition.X, searchRect.Left, -100);
+            var right = Range(cursorPosition.X, searchRect.Right, 100);
+
             var black = new List<Point>();
-            foreach(var y in Range(searchRect.Top, searchRect.Bottom, 5))
-            {
-                foreach (var x in Range(searchRect.Left, searchRect.Right, 20))
-                {
-                    if (Range(-5, 5).All(dx =>
-                        Range(-5, 5).All(dy => bmp.IsBlackAt(x + dx, y + dy))))
-                    {
-                        black.Add(new Point(x, y));
-                        break;
-                    }
-                }
-            }
+            black.AddRange(FindBlackSquares(bmp, left, vertical));
+            black.AddRange(FindBlackSquares(bmp, right, vertical));
 
-            var frames = black.Select(p => FindFrame(bmp, p, false)).
-                OrderBy(f => f.Width);
+            // find all left and right border points
+            var frames = black.Select(p => FindFrame(bmp, p, false))
+                .Where(f => f.Width >= 150);
+            var leftBorders = frames.Distinct(f => f.Left);
+            var rightBorders = frames.Distinct(f => f.Right);
 
-            // reject all frames that aren't full width
-            var fullWidth = frames.LastOrDefault().Width;
-            var fullFrames = frames.Where(f => f.Width == fullWidth);
+            // from those border points, move outwards to find the outer frame
+            var outerPoints = rightBorders.Select(f => FindOuter(bmp, f.Right, f.Top))
+                .Concat(leftBorders.Select(f => FindOuter(bmp, f.Left, f.Bottom, -1)));
 
-            // then, its left and right border
-            var left = fullFrames.OrderBy(f => f.Left).FirstOrDefault();
-            var right = fullFrames.OrderBy(f => f.Right).LastOrDefault();
-            if (left.Width == 0 && right.Width == 0) return null;
+            var outerFrames = outerPoints.Distinct()
+                .Select(p => FindFrame(bmp, p, true));
 
-            // and from there find the outer frame
-            var leftTarget = FindOuter(bmp, left.Left, left.Top, -1);
-            var leftFrame = FindFrame(bmp, leftTarget, true);
-
-            var rightTarget = FindOuter(bmp, right.Right, right.Top);
-            var rightFrame = FindFrame(bmp, rightTarget, true);
-
-            var itemFrame = rightFrame;
-            if (leftFrame.Width > rightFrame.Width ||
-                leftFrame.Width == rightFrame.Width &&
-                leftFrame.Height > rightFrame.Height)
-            {
-                itemFrame = leftFrame;
-            }
+            // the biggest frame we found is (hopefully) the item frame
+            var itemFrame = outerFrames.OrderByDescending(f => f.Width)
+                .ThenByDescending(f => f.Height).FirstOrDefault();
 
             if (itemFrame.Width < 100 || itemFrame.Height < 50)
                 return null;
