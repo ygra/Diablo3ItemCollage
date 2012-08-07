@@ -18,7 +18,7 @@ namespace ItemCollage
             // Taken from http://blogs.msdn.com/b/microsoft_press/archive/2010/02/03/jeffrey-richter-excerpt-2-from-clr-via-c-third-edition.aspx
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
             {
-                String resourceName = "ItemCollage." +
+                String resourceName = "ItemCollage.lib." +
                    new AssemblyName(args.Name).Name + ".dll";
                 using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
                 {

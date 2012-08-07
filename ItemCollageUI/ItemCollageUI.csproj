@@ -124,8 +124,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Helpers.dll" />
-    <EmbeddedResource Include="ItemExtraction.dll" />
+    <EmbeddedResource Include="lib\Helpers.dll" />
+    <EmbeddedResource Include="lib\ItemExtraction.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
