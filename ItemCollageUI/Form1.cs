@@ -50,6 +50,18 @@ namespace ItemCollage
             var screen = TakeScreenshot(ref cursorPos);
             this.Opacity = 1;
 
+#if DEBUG
+            // save picture for future testing
+            var baseName = string.Format("itemat-{0:yyyy-MM-dd-HH-mm-ss}-P{1}-{2}",
+                DateTime.UtcNow, cursorPos.X, cursorPos.Y);
+            var fileName = baseName + ".in.png";
+            var picFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+            var testFolder = Path.Combine(picFolder, "ExtractTest");
+            if (!Directory.Exists(testFolder)) Directory.CreateDirectory(testFolder);
+            var file = Path.Combine(testFolder, fileName);
+            screen.Save(file);
+#endif
+
             var ie = new ItemExtractor(screen, cursorPos);
             var item = ie.ExtractItem();
             sw.Stop();
@@ -64,6 +76,11 @@ namespace ItemCollage
             items.Add(item);
             pictureBox1.Image = item;
             Clipboard.SetImage(item);
+
+#if DEBUG
+            var outfile = Path.Combine(testFolder, baseName + ".out.png");
+            item.Save(outfile);
+#endif
 
             UpdateLabel();
         }
