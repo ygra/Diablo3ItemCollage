@@ -143,7 +143,8 @@ namespace ItemCollage
             Bitmap item = new Bitmap(itemFrame.Width, itemFrame.Height,
                 PixelFormat.Format24bppRgb);
             Graphics g = Graphics.FromImage(item);
-            g.DrawImage(bmp, 0, 0, itemFrame, GraphicsUnit.Pixel);
+            var targetFrame = new Rectangle(0, 0, itemFrame.Width, itemFrame.Height);
+            g.DrawImage(bmp, targetFrame, itemFrame, GraphicsUnit.Pixel);
             g.Dispose();
 
             return item;
