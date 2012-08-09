@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
 
 namespace Test
 {
@@ -29,6 +30,8 @@ namespace Test
             var files = folder.GetFiles("*.in.png");
             var numTests = files.Count();
             int test = 0, success = 0;
+            var sw = new Stopwatch();
+            sw.Start();
             foreach (var input in files)
             {
                 var infile = input.FullName;
@@ -37,7 +40,7 @@ namespace Test
                 Debug.Write(string.Format("Test {0}/{1}... ", ++test, numTests));
 
                 string reason;
-                if (CompareExtraction(infile, outfile, false, out reason))
+                if (CompareExtraction(infile, outfile, out reason))
                 {
                     Debug.Print("passed!");
                     success++;
@@ -48,11 +51,11 @@ namespace Test
                 }
             }
 
-            Debug.Print("{0} of {1} tests succeeded", success, numTests);
+            sw.Stop();
+            Debug.Print("{0} of {1} tests succeeded. Time taken: {2}", success, numTests, sw.Elapsed);
         }
 
-        private static bool CompareExtraction(string infile, string outfile,
-            bool pixelComparison, out string reason)
+        private static bool CompareExtraction(string infile, string outfile, out string reason)
         {
             var match = cursorPattern.Match(infile);
             if (!match.Success)
@@ -96,44 +99,31 @@ namespace Test
                 return false;
             }
 
-            if (pixelComparison)
-            {
-                for (var x = 0; x < result.Width; x++)
+            unsafe {
+                var resultData = result.LockBits(new Rectangle(0, 0, result.Width, result.Height), ImageLockMode.ReadOnly, result.PixelFormat);
+                var expectedData = expected.LockBits(new Rectangle(0, 0, expected.Width, expected.Height), ImageLockMode.ReadOnly, expected.PixelFormat);
+
+                try
                 {
-                    for (var y = 0; y < result.Height; y++)
+                    if (memcmp(resultData.Scan0, expectedData.Scan0, resultData.Stride * resultData.Height) != 0)
                     {
-                        if (result.GetPixel(x, y) != expected.GetPixel(x, y))
-                        {
-                            reason = string.Format("Images differ at {0}/{1}: {2}/{3}",
-                                x, y, expected.GetPixel(x, y), result.GetPixel(x, y));
-                            return false;
-                        }
+                        reason = "Bitmap data did not match";
+                        return false;
                     }
                 }
-            }
-            else
-            {
-                var converter = new ImageConverter();
-                var expectedBytes = (byte[])converter.ConvertTo(expected, typeof(byte[]));
-                // TODO: for some reason we have to save this as file...
-                var resfile = infile.Replace(".in.png", ".res.png");
-                result.Save(resfile);
-                var resultBytes = (byte[])converter.ConvertTo(new Bitmap(resfile), typeof(byte[]));
-
-                var sha1 = new SHA1Managed();
-                var expectedHash = BitConverter.ToString(sha1.ComputeHash(expectedBytes));
-                var resultHash = BitConverter.ToString(sha1.ComputeHash(resultBytes));
-
-                if (expectedHash != resultHash)
+                finally
                 {
-                    reason = string.Format("Hash differs, expected {0}, got {1}",
-                        expectedHash, resultHash);
-                    return false;
+                    result.UnlockBits(resultData);
+                    expected.UnlockBits(expectedData);
                 }
             }
 
             reason = "";
             return true;
         }
+
+        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
+        static extern int memcmp(IntPtr b1, IntPtr b2, long count);
+
     }
 }
