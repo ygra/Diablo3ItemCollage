@@ -51,6 +51,7 @@ namespace ItemCollage
             this.Opacity = 1;
 
 #if DEBUG
+            sw.Stop();
             // save picture for future testing
             var baseName = string.Format("itemat-{0:yyyy-MM-dd-HH-mm-ss}-P{1}-{2}",
                 DateTime.UtcNow, cursorPos.X, cursorPos.Y);
@@ -60,6 +61,7 @@ namespace ItemCollage
             if (!Directory.Exists(testFolder)) Directory.CreateDirectory(testFolder);
             var file = Path.Combine(testFolder, fileName);
             screen.Save(file);
+            sw.Start();
 #endif
 
             var ie = new ItemExtractor(screen, cursorPos);
