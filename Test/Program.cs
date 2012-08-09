@@ -18,6 +18,7 @@ namespace Test
         static string folderPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
             "ExtractTest");
+        static double extractTime = 0.0;
 
         static void Main(string[] args)
         {
@@ -59,7 +60,8 @@ namespace Test
             sw.Stop();
 
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("{0} of {1} tests succeeded. Time taken: {2}", success, numTests, sw.Elapsed);
+            Console.WriteLine("{0} of {1} tests succeeded.", success, numTests);
+            Console.WriteLine("Time taken: {0} ({1}s in extraction)", sw.Elapsed, extractTime);
         }
 
         private static bool CompareExtraction(string infile, string outfile, out string reason)
@@ -76,8 +78,18 @@ namespace Test
                 Convert.ToInt32(match.Groups[1].Captures[0].Value),
                 Convert.ToInt32(match.Groups[2].Captures[0].Value));
 
+            var sw = new Stopwatch();
+            sw.Start();
             var ie = new ItemCollage.ItemExtractor(bmp, cursorPos);
             Bitmap result = (Bitmap)ie.ExtractItem();
+            sw.Stop();
+
+            var time = sw.Elapsed.TotalSeconds;
+            extractTime += time;
+            if (time > 0.1) Console.ForegroundColor = ConsoleColor.Yellow;
+            else if (time > 0.2) Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write("({0}) ", sw.Elapsed);
+            Console.ResetColor();
 
             var exist = File.Exists(outfile);
             if (result != null && !exist)
