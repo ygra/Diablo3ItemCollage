@@ -100,12 +100,16 @@ namespace Test
             }
 
             unsafe {
-                var resultData = result.LockBits(new Rectangle(0, 0, result.Width, result.Height), ImageLockMode.ReadOnly, result.PixelFormat);
-                var expectedData = expected.LockBits(new Rectangle(0, 0, expected.Width, expected.Height), ImageLockMode.ReadOnly, expected.PixelFormat);
+                var rect = new Rectangle(0, 0, result.Width, result.Height);
+                var resultData = result.LockBits(rect, ImageLockMode.ReadOnly,
+                    result.PixelFormat);
+                var expectedData = expected.LockBits(rect, ImageLockMode.ReadOnly,
+                    expected.PixelFormat);
 
                 try
                 {
-                    if (memcmp(resultData.Scan0, expectedData.Scan0, resultData.Stride * resultData.Height) != 0)
+                    if (memcmp(resultData.Scan0, expectedData.Scan0,
+                        resultData.Stride * resultData.Height) != 0)
                     {
                         reason = "Bitmap data did not match";
                         return false;
