@@ -92,20 +92,24 @@ namespace Test
             Console.ResetColor();
 
             var exist = File.Exists(outfile);
-            if (result != null && !exist)
+            if (result == null)
+            {
+                if (exist)
+                {
+                    reason = "Item not found";
+                    return false;
+                }
+                else
+                {
+                    reason = "";
+                    return true;
+                }
+            }
+
+            if (!exist)
             {
                 reason = "Unexpectedly found item";
                 return false;
-            }
-            else if (result == null && exist)
-            {
-                reason = "Item not found";
-                return false;
-            }
-            else if (result == null && !exist)
-            {
-                reason = "";
-                return true;
             }
 
             var expected = new Bitmap(outfile);
@@ -118,7 +122,8 @@ namespace Test
                 return false;
             }
 
-            unsafe {
+            unsafe
+            {
                 var rect = new Rectangle(0, 0, result.Width, result.Height);
                 var resultData = result.LockBits(rect, ImageLockMode.ReadOnly,
                     result.PixelFormat);
