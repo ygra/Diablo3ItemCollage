@@ -30,29 +30,36 @@ namespace Test
             var files = folder.GetFiles("*.in.png");
             var numTests = files.Count();
             int test = 0, success = 0;
+
             var sw = new Stopwatch();
             sw.Start();
+
             foreach (var input in files)
             {
                 var infile = input.FullName;
                 var outfile = infile.Replace(".in.png", ".out.png");
 
-                Debug.Write(string.Format("Test {0}/{1}... ", ++test, numTests));
+                Console.ResetColor();
+                Console.Write(string.Format("Test {0}/{1}... ", ++test, numTests));
 
                 string reason;
                 if (CompareExtraction(infile, outfile, out reason))
                 {
-                    Debug.Print("passed!");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("passed!");
                     success++;
                 }
                 else
                 {
-                    Debug.Print("failed ({0})", reason);
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("failed ({0})", reason);
                 }
             }
 
             sw.Stop();
-            Debug.Print("{0} of {1} tests succeeded. Time taken: {2}", success, numTests, sw.Elapsed);
+
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("{0} of {1} tests succeeded. Time taken: {2}", success, numTests, sw.Elapsed);
         }
 
         private static bool CompareExtraction(string infile, string outfile, out string reason)
@@ -128,6 +135,5 @@ namespace Test
 
         [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
         static extern int memcmp(IntPtr b1, IntPtr b2, long count);
-
     }
 }
