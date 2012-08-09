@@ -104,6 +104,7 @@ namespace ItemCollage
         public Image ExtractItem()
         {
             var searchSize = new Size(1200, 400);
+            int minWidth = 100, minHeight = 90;
             var searchRect = new Rectangle(cursorPos.X - searchSize.Width / 2,
                                            cursorPos.Y - searchSize.Height / 2,
                                            searchSize.Width, searchSize.Height);
@@ -131,13 +132,14 @@ namespace ItemCollage
                 .Concat(leftBorders.Select(f => FindOuter(bmp, f.Left, f.Bottom, -1)));
 
             var outerFrames = outerPoints.Distinct()
-                .Select(p => FindFrame(bmp, p, true));
+                .Select(p => FindFrame(bmp, p, true))
+                .Where(f => f.Width >= minWidth && f.Height >= minHeight);
 
             // the biggest frame we found is (hopefully) the item frame
             var itemFrame = outerFrames.OrderByDescending(f => f.Width)
                 .ThenByDescending(f => f.Height).FirstOrDefault();
 
-            if (itemFrame.Width < 100 || itemFrame.Height < 50)
+            if (itemFrame.Width < minWidth || itemFrame.Height < minHeight)
                 return null;
 
             Bitmap item = new Bitmap(itemFrame.Width, itemFrame.Height,
