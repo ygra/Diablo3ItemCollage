@@ -251,7 +251,7 @@ public class ItemListBox : ListBox
         if (titles.ContainsKey(item))
             return titles[item];
 
-        var title = ItemExtractor.ExtractItemName(item);
+        var title = ItemExtractor.ExtractItemName(item, true);
 
         titleQueue.Enqueue(title);
         if (titleQueue.Count > titleCount)
@@ -286,6 +286,7 @@ public class ItemListBox : ListBox
         {
             var item = (Bitmap)this.Items[e.Index];
             var title = GetTitle(item);
+            e.Graphics.FillRectangle(Brushes.Black, e.Bounds);
             e.Graphics.DrawImageUnscaled(title, e.Bounds);
         }
         catch
