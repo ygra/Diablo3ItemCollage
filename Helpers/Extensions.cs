@@ -8,6 +8,7 @@ namespace ItemCollage
 {
     public static class Extensions
     {
+        /* IEnumerable */
         private static IEnumerable<KeyValuePair<TVal, TMapped>> MapSortBy<TVal, TMapped>(
             this IEnumerable<TVal> source, Func<TVal, TMapped> selector)
         {
@@ -25,15 +26,6 @@ namespace ItemCollage
         Func<TVal, TMapped> selector)
         {
             return source.MapSortBy(selector).FirstOrDefault().Key;
-        }
-
-        public static bool IsBlackAt(this Bitmap b, int x, int y)
-        {
-            if (x < 0 || y < 0 || x >= b.Width || y >= b.Height)
-                return false;
-
-            Color c = b.GetPixel(x, y);
-            return c.R == 0 && c.G == 0 && c.B == 0;
         }
 
         public class FuncEqualityComparer<TSource, TResult> : EqualityComparer<TSource>
@@ -57,6 +49,48 @@ namespace ItemCollage
         public static IEnumerable<TSource> Distinct<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> func)
         {
             return source.Distinct(new FuncEqualityComparer<TSource, TResult>(func));
+        }
+
+        /* Bitmap */
+        public static bool IsBlackAt(this Bitmap b, int x, int y)
+        {
+            if (x < 0 || y < 0 || x >= b.Width || y >= b.Height)
+                return false;
+
+            Color c = b.GetPixel(x, y);
+            return c.R == 0 && c.G == 0 && c.B == 0;
+        }
+
+        public static bool IsColumnBlack(this Bitmap b, int x)
+        {
+            return b.IsColumnBlack(x, 0, b.Height - 1);
+        }
+
+        public static bool IsColumnBlack(this Bitmap b, int x, int ystart)
+        {
+            return b.IsColumnBlack(x, ystart, b.Height - 1);
+        }
+
+        public static bool IsColumnBlack(this Bitmap b, int x, int ystart,
+            int yend)
+        {
+            return Helper.Range(ystart, yend).All(y => b.IsBlackAt(x, y));
+        }
+
+        public static bool IsRowBlack(this Bitmap b, int y)
+        {
+            return b.IsRowBlack(y, 0, b.Width - 1);
+        }
+
+        public static bool IsRowBlack(this Bitmap b, int y, int xstart)
+        {
+            return b.IsRowBlack(y, xstart, b.Width - 1);
+        }
+
+        public static bool IsRowBlack(this Bitmap b, int y, int xstart,
+            int xend)
+        {
+            return Helper.Range(xstart, xend).All(x => b.IsBlackAt(x, y));
         }
     }
 }
