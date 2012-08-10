@@ -151,5 +151,15 @@ namespace ItemCollage
 
             return item;
         }
+
+        public static Bitmap ExtractItemName(Bitmap bmp)
+        {
+            Bitmap title = new Bitmap(bmp.Width, 20, PixelFormat.Format24bppRgb);
+            using (Graphics g = Graphics.FromImage(title))
+            {
+                g.DrawImageUnscaledAndClipped(bmp, new Rectangle(0, 0, title.Width, title.Height));
+            }
+            return title;
+        }
     }
 }
