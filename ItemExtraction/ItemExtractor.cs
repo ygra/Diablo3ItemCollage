@@ -198,7 +198,7 @@ namespace ItemCollage
                 new float[] {0.33f, 0.33f, 0.33f, 0, 0},
                 new float[] {0.33f, 0.33f, 0.33f, 0, 0},
                 new float[] {0, 0, 0, 1, 0},
-                new float[] {-0.25f, -0.25f, -0.25f, 0, 1}
+                new float[] {-0.3f, -0.3f, -0.3f, 0, 1}
             });
 
             var attribs = new ImageAttributes();
