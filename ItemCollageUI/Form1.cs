@@ -9,6 +9,8 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
+using System.ComponentModel;
+using ItemCollage;
 
 namespace ItemCollage
 {
@@ -20,7 +22,7 @@ namespace ItemCollage
             "https://github.com/ygra/Diablo3ItemCollage/downloads";
 
         IDictionary<GlobalHotkey, Action> hotkeys;
-        List<Image> items = new List<Image>();
+        BindingList<Image> items = new BindingList<Image>();
 
         public Form1()
         {
@@ -38,6 +40,8 @@ namespace ItemCollage
             UpdateLabel();
 
             CheckForUpdates();
+
+            itemListBox1.DataSource = items;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -82,7 +86,8 @@ namespace ItemCollage
             }
 
             items.Add(item);
-            pictureBox1.Image = item;
+            Debug.Print("{0} items in ListBox", itemListBox1.Items.Count);
+            //pictureBox1.Image = item;
             Clipboard.SetImage(item);
 
 #if DEBUG
@@ -169,10 +174,10 @@ namespace ItemCollage
 
             items.RemoveAt(items.Count - 1);
 
-            if (items.Count > 0)
-                pictureBox1.Image = items[items.Count - 1];
-            else
-                pictureBox1.Image = null;
+            //if (items.Count > 0)
+            //    pictureBox1.Image = items[items.Count - 1];
+            //else
+            //    pictureBox1.Image = null;
 
             UpdateLabel();
         }
@@ -214,7 +219,7 @@ namespace ItemCollage
                 b.Save(file);
                 Clipboard.SetImage(b);
                 items.Clear();
-                pictureBox1.Image = null;
+                //pictureBox1.Image = null;
                 label1.Text = "Collage saved";
             }
             catch { }
@@ -223,6 +228,70 @@ namespace ItemCollage
         private void Form1_Load(object sender, EventArgs e)
         {
             this.TopMost = true;
+        }
+
+    }
+}
+
+public class ItemListBox : ListBox
+{
+    const int titleCount = 50;
+
+    IDictionary<Bitmap, Bitmap> titles;
+    Queue<Bitmap> titleQueue;
+
+    public ItemListBox() : base() {
+        this.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
+        this.titles = new Dictionary<Bitmap, Bitmap>();
+        this.titleQueue = new Queue<Bitmap>(titleCount + 1);
+    }
+
+    private Bitmap GetTitle(Bitmap item)
+    {
+        if (titles.ContainsKey(item))
+            return titles[item];
+
+        var title = ItemExtractor.ExtractItemName(item);
+
+        titleQueue.Enqueue(title);
+        if (titleQueue.Count > titleCount)
+            titleQueue.Dequeue();
+
+        titles[item] = title;
+        return item;
+    }
+
+    protected override void OnMeasureItem(MeasureItemEventArgs e)
+    {
+        base.OnMeasureItem(e);
+
+        try
+        {
+            var item = (Bitmap)this.Items[e.Index];
+            var title = GetTitle(item);
+            e.ItemHeight = title.Height;
+        }
+        catch
+        {
+            e.ItemHeight = 10;
+            return;
+        }
+    }
+
+    protected override void OnDrawItem(DrawItemEventArgs e)
+    {
+        base.OnDrawItem(e);
+
+        try
+        {
+            var item = (Bitmap)this.Items[e.Index];
+            var title = GetTitle(item);
+            e.Graphics.DrawImageUnscaled(title, e.Bounds);
+        }
+        catch
+        {
+            e.Graphics.FillRectangle(Brushes.Red, e.Bounds);
+            return;
         }
     }
 }
