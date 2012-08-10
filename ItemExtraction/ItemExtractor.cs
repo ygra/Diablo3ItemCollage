@@ -54,8 +54,7 @@ namespace ItemCollage
 
             skip = 0;
             if (twoDim && !Helper.Range(extentUp, extentDown).All(
-                    y => bmp.IsBlackAt(extentRight, y) &&
-                         bmp.IsBlackAt(extentLeft, y) ||
+                    y => bmp.IsBlackAt(extentLeft, y) ||
                          ++skip < MAX_SKIP))
                 return new Rectangle();
 
