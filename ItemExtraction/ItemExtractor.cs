@@ -152,14 +152,98 @@ namespace ItemCollage
             return item;
         }
 
-        public static Bitmap ExtractItemName(Bitmap bmp)
+        public static Bitmap ExtractItemName(Bitmap bmp, bool removeFrame)
         {
-            Bitmap title = new Bitmap(bmp.Width, 20, PixelFormat.Format24bppRgb);
-            using (Graphics g = Graphics.FromImage(title))
+            // to separate the title from the actual item, simplify move down
+            // from the first non-black row until everything is black again
+            var top = Helper.Range(0, bmp.Height - 1).First(y =>
+                !bmp.IsRowBlack(y));
+
+            // this is the first black row below the title, so the the title
+            // height is given as bottom - top, not bottom - top + 1
+            var bottom = Helper.Range(top + 1, bmp.Height - 1).First(y =>
+                bmp.IsRowBlack(y));
+
+            // remove the black border (move one further than necessary as there
+            // usually is one non-black pixel in the last border column)
+            var left = Helper.Range(0, bmp.Width - 1).First(x =>
+                bmp.IsColumnBlack(x, top, bottom)) + 1;
+            var right = Helper.Range(bmp.Width - 1, 0, -1).First(x =>
+                !bmp.IsColumnBlack(x, top, bottom)) - 1;
+
+            if (!removeFrame)
             {
-                g.DrawImageUnscaledAndClipped(bmp, new Rectangle(0, 0, title.Width, title.Height));
+                var targetFrame = new Rectangle(left, top, right - left, bottom - top);
+
+                var title = new Bitmap(targetFrame.Width, targetFrame.Height,
+                    PixelFormat.Format24bppRgb);
+                using (Graphics g = Graphics.FromImage(title))
+                {
+                    g.DrawImage(bmp, new Rectangle(0, 0, title.Width, title.Height),
+                        targetFrame, GraphicsUnit.Pixel);
+                }
+
+                return title;
             }
-            return title;
+
+            // transform the image and remove 25% of the brightness to get
+            // rid of the outer frame and the background color gradient
+            ColorMatrix grayscale = new ColorMatrix(new float[][]
+            {
+                new float[] {0.33f, 0.33f, 0.33f, 0, 0},
+                new float[] {0.33f, 0.33f, 0.33f, 0, 0},
+                new float[] {0.33f, 0.33f, 0.33f, 0, 0},
+                new float[] {0, 0, 0, 1, 0},
+                new float[] {-0.25f, -0.25f, -0.25f, 0, 1}
+            });
+
+            var attribs = new ImageAttributes();
+            attribs.SetColorMatrix(grayscale);
+            Bitmap img = new Bitmap(right - left, bottom - top,
+                PixelFormat.Format24bppRgb);
+            using (Graphics g = Graphics.FromImage(img))
+            {
+                var target = new Rectangle(0, 0, img.Width, img.Height);
+                g.DrawImage(bmp, target, left, top, img.Width, img.Height,
+                    GraphicsUnit.Pixel, attribs);
+            }
+
+            // skip first row at top/bottom, as there's sometimes a non-
+            // black pixel in there
+            // first row that contains the item name
+            var innerTop = Helper.Range(1, img.Height - 1).First(y =>
+                !img.IsRowBlack(y));
+            // again, the first row *below* the item name
+            var innerBottom = Helper.Range(img.Height - 2, innerTop + 1, -1).First(y =>
+                !img.IsRowBlack(y)) + 1;
+
+            // first column that contains the text
+            var innerLeft = Helper.Range(0, img.Width - 1).First(x =>
+                !img.IsColumnBlack(x, innerTop, innerBottom));
+            // the first black column behind the item text
+            var innerRight = Helper.Range(img.Width - 1, 0, -1).First(x =>
+                !img.IsColumnBlack(x, innerTop, innerBottom)) + 1;
+
+            var nameFrame = new Rectangle(left + innerLeft, top + innerTop,
+                innerRight - innerLeft, innerBottom - innerTop);
+
+            var name = new Bitmap(nameFrame.Width, nameFrame.Height,
+                PixelFormat.Format24bppRgb);
+            for (var x = 0; x < name.Width; x++)
+            {
+                var innerX = x + innerLeft; ;
+                for (var y = 0; y < name.Height; y++)
+                {
+                    var innerY = y + innerTop;
+                    if (!img.IsBlackAt(innerX, innerY))
+                    {
+                        name.SetPixel(x, y,
+                            bmp.GetPixel(innerX + left, innerY + top));
+                    }
+                }
+            }
+
+            return name;
         }
     }
 }
