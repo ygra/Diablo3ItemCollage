@@ -103,19 +103,15 @@ namespace ItemCollage
 
         public Image ExtractItem()
         {
-            var searchSize = new Size(1200, 400);
-            int minWidth = 100, minHeight = 90;
-            var searchRect = new Rectangle(cursorPos.X - searchSize.Width / 2,
-                                           cursorPos.Y - searchSize.Height / 2,
-                                           searchSize.Width, searchSize.Height);
+            int minWidth = 150, minHeight = 90;
 
             // first, we have to find the inner item box
             // we do this by moving outwards from the cursor, that way we can
             // be sure to hit the actual item first, instead of a potential
             // equipped item popup
-            var vertical = Helper.Range(searchRect.Top, searchRect.Bottom, 5);
-            var left = Helper.Range(cursorPos.X, searchRect.Left, -100);
-            var right = Helper.Range(cursorPos.X, searchRect.Right, 100);
+            var vertical = Helper.Range(0, bmp.Height, 5);
+            var left = Helper.Range(cursorPos.X, 0, -minWidth);
+            var right = Helper.Range(cursorPos.X, bmp.Width, minWidth);
 
             var black = new List<Point>();
             black.AddRange(FindBlackSquares(bmp, left, vertical));
@@ -123,7 +119,7 @@ namespace ItemCollage
 
             // find all left and right border points
             var frames = black.Select(p => FindFrame(bmp, p, false))
-                .Where(f => f.Width >= 150);
+                .Where(f => f.Width >= minWidth);
             var leftBorders = frames.Distinct(f => f.Left);
             var rightBorders = frames.Distinct(f => f.Right);
 
@@ -135,9 +131,18 @@ namespace ItemCollage
                 .Select(p => FindFrame(bmp, p, true))
                 .Where(f => f.Width >= minWidth && f.Height >= minHeight);
 
-            // the biggest frame we found is (hopefully) the item frame
-            var itemFrame = outerFrames.OrderByDescending(f => f.Width)
-                .ThenByDescending(f => f.Height).FirstOrDefault();
+            // the frame closest to the cursor position is (hopefully) the
+            // item frame. if the cursor is inside the item frame, we simply
+            // take the biggest frame we can find
+            //var itemFrame = outerFrames.OrderByDescending(f => f.Width)
+            //    .ThenByDescending(f => f.Height).FirstOrDefault();
+
+            var itemFrame = outerFrames.OrderBy(f =>
+                cursorPos.X > f.Right ? cursorPos.X - f.Right :
+                cursorPos.X < f.Left ? f.Left - cursorPos.X : 0)
+                .ThenByDescending(f => f.Width)
+                .ThenByDescending(f => f.Height)
+                .FirstOrDefault();
 
             if (itemFrame.Width < minWidth || itemFrame.Height < minHeight)
                 return null;
