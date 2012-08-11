@@ -231,23 +231,25 @@ namespace ItemCollage
             var nameFrame = new Rectangle(left + innerLeft, top + innerTop,
                 innerRight - innerLeft, innerBottom - innerTop);
 
-            var name = new Bitmap(nameFrame.Width, nameFrame.Height,
-                PixelFormat.Format24bppRgb);
             var h = nameFrame.Height;
             var w = nameFrame.Width;
+            var name = new Bitmap(w, h, PixelFormat.Format24bppRgb);
             for (var x = 0; x < name.Width; x++)
             {
+                // position in the item title frame that corresponds to x
                 var innerX = x + innerLeft;
+                // corresponding position in the full item frame
+                var outerX = innerX + left;
+
                 for (var y = 0; y < name.Height; y++)
                 {
                     var innerY = y + innerTop;
+                    var outerY = innerY + top;
+
                     if (!img.IsBlackAt(innerX, innerY))
                     {
                         // copy the matching and all neighboring pixels to get
                         // some kind of font anti-aliasing
-                        Action<int, int> copyPixel = (dx, dy) => name.SetPixel(x + dx, y + dy,
-                            bmp.GetPixel(innerX + left + dx, innerY + top + dy));
-
                         var points = from dx in Helper.Range(-1, 1)
                                      from dy in Helper.Range(-1, 1)
                                      let fy = y + dy
@@ -256,7 +258,8 @@ namespace ItemCollage
                                      select new { dx, dy };
 
                         foreach (var d in points)
-                            copyPixel(d.dx, d.dy);
+                            name.SetPixel(x + d.dx, y + d.dy,
+                                bmp.GetPixel(outerX + d.dx, outerY + d.dy));
                     }
                 }
             }
