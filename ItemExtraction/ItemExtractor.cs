@@ -233,7 +233,8 @@ namespace ItemCollage
 
             var name = new Bitmap(nameFrame.Width, nameFrame.Height,
                 PixelFormat.Format24bppRgb);
-            var h = nameFrame.Height - 1;
+            var h = nameFrame.Height;
+            var w = nameFrame.Width;
             for (var x = 0; x < name.Width; x++)
             {
                 var innerX = x + innerLeft;
@@ -247,21 +248,15 @@ namespace ItemCollage
                         Action<int, int> copyPixel = (dx, dy) => name.SetPixel(x + dx, y + dy,
                             bmp.GetPixel(innerX + left + dx, innerY + top + dy));
 
-                        copyPixel(0, 0);
-                        if (y > 0) copyPixel(0, -1);
-                        if (y < h) copyPixel(0, 1);
-                        if (x > 0)
-                        {
-                            copyPixel(-1, 0);
-                            if (y > 0) copyPixel(-1, -1);
-                            if (y < h) copyPixel(-1, 1);
-                        }
-                        if (x < h)
-                        {
-                            copyPixel(1, 0);
-                            if (y > 0) copyPixel(1, -1);
-                            if (y < h) copyPixel(1, 1);
-                        }
+                        var points = from dx in Helper.Range(-1, 1)
+                                     from dy in Helper.Range(-1, 1)
+                                     let fy = y + dy
+                                     let fx = x + dx
+                                     where fy >= 0 && fy < h && fx >= 0 && fx < w
+                                     select new { dx, dy };
+
+                        foreach (var d in points)
+                            copyPixel(d.dx, d.dy);
                     }
                 }
             }
