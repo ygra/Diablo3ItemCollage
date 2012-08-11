@@ -133,9 +133,6 @@ namespace ItemCollage
             // the frame closest to the cursor position is (hopefully) the
             // item frame. if the cursor is inside the item frame, we simply
             // take the biggest frame we can find
-            //var itemFrame = outerFrames.OrderByDescending(f => f.Width)
-            //    .ThenByDescending(f => f.Height).FirstOrDefault();
-
             var itemFrame = outerFrames.OrderBy(f =>
                 cursorPos.X > f.Right ? cursorPos.X - f.Right :
                 cursorPos.X < f.Left ? f.Left - cursorPos.X : 0)
