@@ -258,7 +258,7 @@ public class ItemListBox : ListBox
             titleQueue.Dequeue();
 
         titles[item] = title;
-        return item;
+        return title;
     }
 
     protected override void OnMeasureItem(MeasureItemEventArgs e)
@@ -269,30 +269,32 @@ public class ItemListBox : ListBox
         {
             var item = (Bitmap)this.Items[e.Index];
             var title = GetTitle(item);
-            e.ItemHeight = title.Height;
+            e.ItemHeight = title.Height+4;
         }
         catch
         {
-            e.ItemHeight = 10;
+            e.ItemHeight = 2;
             return;
         }
     }
 
     protected override void OnDrawItem(DrawItemEventArgs e)
     {
-        base.OnDrawItem(e);
-
+        e.DrawBackground();
         try
         {
             var item = (Bitmap)this.Items[e.Index];
             var title = GetTitle(item);
+            var drawRect = e.Bounds;
+            drawRect.Inflate(0, -2);
+            drawRect.Offset(2, 0);
             e.Graphics.FillRectangle(Brushes.Black, e.Bounds);
-            e.Graphics.DrawImageUnscaled(title, e.Bounds);
+            e.Graphics.DrawImageUnscaled(title, drawRect.X, drawRect.Y);
         }
         catch
         {
             e.Graphics.FillRectangle(Brushes.Red, e.Bounds);
-            return;
         }
+        e.DrawFocusRectangle();
     }
 }
