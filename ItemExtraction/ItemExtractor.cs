@@ -236,7 +236,7 @@ namespace ItemCollage
             var h = nameFrame.Height - 1;
             for (var x = 0; x < name.Width; x++)
             {
-                var innerX = x + innerLeft; ;
+                var innerX = x + innerLeft;
                 for (var y = 0; y < name.Height; y++)
                 {
                     var innerY = y + innerTop;
