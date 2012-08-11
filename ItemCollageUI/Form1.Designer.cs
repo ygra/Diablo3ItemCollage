@@ -56,11 +56,14 @@
             // 
             // itemListBox1
             // 
+            this.itemListBox1.BackColor = System.Drawing.Color.Black;
+            this.itemListBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.itemListBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.itemListBox1.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
-            this.itemListBox1.FormattingEnabled = true;
+            this.itemListBox1.ForeColor = System.Drawing.Color.White;
             this.itemListBox1.Location = new System.Drawing.Point(0, 0);
             this.itemListBox1.Name = "itemListBox1";
+            this.itemListBox1.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.itemListBox1.Size = new System.Drawing.Size(278, 301);
             this.itemListBox1.TabIndex = 4;
             // 
@@ -73,7 +76,6 @@
             this.Controls.Add(this.itemListBox1);
             this.Controls.Add(this.panel1);
             this.ForeColor = System.Drawing.Color.White;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.ShowIcon = false;
