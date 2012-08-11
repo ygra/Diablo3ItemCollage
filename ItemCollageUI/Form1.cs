@@ -269,7 +269,8 @@ public class ItemListBox : ListBox
         {
             var item = (Bitmap)this.Items[e.Index];
             var title = GetTitle(item);
-            e.ItemHeight = title.Height+4;
+            // leave a little more space
+            e.ItemHeight = title.Height + 4;
         }
         catch
         {
@@ -286,7 +287,9 @@ public class ItemListBox : ListBox
             var item = (Bitmap)this.Items[e.Index];
             var title = GetTitle(item);
             var drawRect = e.Bounds;
+            // account for the space between items
             drawRect.Inflate(0, -2);
+            // and a little space to the left, too
             drawRect.Offset(2, 0);
             e.Graphics.FillRectangle(Brushes.Black, e.Bounds);
             e.Graphics.DrawImageUnscaled(title, drawRect.X, drawRect.Y);
