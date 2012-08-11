@@ -198,7 +198,7 @@ namespace ItemCollage
                 new float[] {0.33f, 0.33f, 0.33f, 0, 0},
                 new float[] {0.33f, 0.33f, 0.33f, 0, 0},
                 new float[] {0, 0, 0, 1, 0},
-                new float[] {-0.3f, -0.3f, -0.3f, 0, 1}
+                new float[] {-0.26f, -0.26f, -0.26f, 0, 1}
             });
 
             var attribs = new ImageAttributes();
@@ -233,6 +233,7 @@ namespace ItemCollage
 
             var name = new Bitmap(nameFrame.Width, nameFrame.Height,
                 PixelFormat.Format24bppRgb);
+            var h = nameFrame.Height - 1;
             for (var x = 0; x < name.Width; x++)
             {
                 var innerX = x + innerLeft; ;
@@ -241,8 +242,26 @@ namespace ItemCollage
                     var innerY = y + innerTop;
                     if (!img.IsBlackAt(innerX, innerY))
                     {
-                        name.SetPixel(x, y,
-                            bmp.GetPixel(innerX + left, innerY + top));
+                        // copy the matching and all neighboring pixels to get
+                        // some kind of font anti-aliasing
+                        Action<int, int> copyPixel = (dx, dy) => name.SetPixel(x + dx, y + dy,
+                            bmp.GetPixel(innerX + left + dx, innerY + top + dy));
+
+                        copyPixel(0, 0);
+                        if (y > 0) copyPixel(0, -1);
+                        if (y < h) copyPixel(0, 1);
+                        if (x > 0)
+                        {
+                            copyPixel(-1, 0);
+                            if (y > 0) copyPixel(-1, -1);
+                            if (y < h) copyPixel(-1, 1);
+                        }
+                        if (x < h)
+                        {
+                            copyPixel(1, 0);
+                            if (y > 0) copyPixel(1, -1);
+                            if (y < h) copyPixel(1, 1);
+                        }
                     }
                 }
             }
