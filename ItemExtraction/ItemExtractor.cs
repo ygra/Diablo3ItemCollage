@@ -35,6 +35,7 @@ namespace ItemCollage
                             ++skip < MAX_SKIP)
                         .Last(y => bmp.IsBlackAt(p.X, p.Y - y));
 
+                skip = 0;
                 extentDown =
                     Enumerable.Range(p.Y, bmp.Height - p.Y)
                         .TakeWhile(y => bmp.IsBlackAt(p.X, y) ||
