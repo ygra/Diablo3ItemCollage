@@ -1,20 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
-using System.Drawing.Imaging;
-using System.Runtime.InteropServices;
-using System.IO;
-using System.Diagnostics;
 
 namespace ItemCollage
 {
     public partial class Form1 : Form
     {
+        const string UPDATE_URL =
+            "https://raw.github.com/ygra/Diablo3ItemCollage/master/version";
+        const string DOWNLOAD_URL =
+            "https://github.com/ygra/Diablo3ItemCollage/downloads";
+
         IDictionary<GlobalHotkey, Action> hotkeys;
         List<Image> items = new List<Image>();
 
@@ -32,6 +36,8 @@ namespace ItemCollage
                 hk.Key.Register();
 
             UpdateLabel();
+
+            CheckForUpdates();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -91,6 +97,43 @@ namespace ItemCollage
         {
             label1.Text = string.Format("{0} item{1} copied.", items.Count,
                 items.Count != 1 ? "s" : "");
+        }
+
+        private void CheckForUpdates()
+        {
+            var client = new WebClient();
+            client.Encoding = Encoding.UTF8;
+            client.DownloadStringCompleted +=
+                delegate(object s, DownloadStringCompletedEventArgs e)
+                {
+                    if (e.Error != null)
+                        CheckUpdateError(e.Error);
+                    else
+                        CompareVersions(e.Result);
+                };
+
+            client.DownloadStringAsync(new Uri(UPDATE_URL));
+        }
+
+        private void CheckUpdateError(Exception error)
+        {
+            MessageBox.Show("Checking for updates failed:\n" + error.Message);
+        }
+
+        private void CompareVersions(string data)
+        {
+            var local = Assembly.GetExecutingAssembly().GetName().Version;
+            var remote = new Version(data);
+
+            if (remote > local)
+            {
+                var res = MessageBox.Show(string.Format(
+                    "New version {0} available, download now?", remote),
+                    "Diablo3ItemCollage", MessageBoxButtons.YesNo);
+
+                if (res == DialogResult.Yes)
+                    Process.Start(DOWNLOAD_URL);
+            }
         }
 
         protected override void WndProc(ref Message m)
