@@ -10,16 +10,37 @@ parse_token () {
 	echo "$2" | sed -nre "/^\\s*\"$1\":\\s*\"?/{s///;s/\"?,?\\s*$//;p}"
 }
 
+if [[ "$1" == "-o" ]]; then
+  # don't do any git stuff, don't upload the build
+	offline=1
+	shift
+fi
+
 user="$1"
 [ -z "$user" ] && die "GitHub username required"
+
 tag="$2"
-version="${tag#v*}"
 [ -z "$tag" ] && die "Version tag required"
-[ -n "$(git tag -l "$tag")" ] && die "Tag already exists"
+
+nightly=""
+if [[ "$tag" = "nightly" ]]; then
+	tag="$(git describe)"
+	# cut off revision number
+	tag="${tag%-*}"
+	nightly=1
+else
+	[ -n "$(git tag -l "$tag")" ] && die "Tag already exists"
+fi
+
+# remove v prefix
+version="${tag#v*}"
+# use revision as build number
+version="${version//-/.}"
 
 echo "Bumping version..."
-echo "$tag" > ./version
-sed -ri "s/^(\[assembly:\s+AssemblyVersion)\(\"[^\"]+\"\)/\1(\"$version.*\")/" \
+# echo \r\n so git doesn't complain about line endings
+echo -ne "$version\r\n" > ./version
+sed -ri "s/^(\[assembly:\s+AssemblyVersion)\(\"[^\"]+\"\)/\1(\"$version.0\")/" \
        ItemCollageUI/Properties/AssemblyInfo.cs
 
 echo "Compiling..."
@@ -27,13 +48,15 @@ cmd "/c C:\\Windows\\Microsoft.Net\\Framework\\v4.0.30319\\MSBuild.exe \
             /nologo /p:Configuration=Release /verbosity:q"
 
 file="ItemCollage-$tag.exe"
-path="ItemCollageUI/bin/Release/ItemCollage-$tag.exe"
+path="ItemCollageUI/bin/Release/$file"
 mv ItemCollageUI/bin/Release/ItemCollage.exe "$path"
+
+[[ -n "$offline" ]] && exit 0
 
 echo "Preparing commit and tag"
 git add version
 git commit -m "Bump version to $tag"
-git tag "$tag"
+[ -n "$nightly"] && git tag "$tag"
 
 echo "Uploading file"
 size="$(du -b "$path" | awk '{print $1}')"
