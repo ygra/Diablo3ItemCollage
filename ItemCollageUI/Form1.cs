@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -9,8 +10,6 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
-using System.ComponentModel;
-using ItemCollage;
 
 namespace ItemCollage
 {
