@@ -68,6 +68,9 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="GlobalHotkey.cs" />
+    <Compile Include="ImageTooltip.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="ItemListBox.cs">
       <SubType>Component</SubType>
     </Compile>

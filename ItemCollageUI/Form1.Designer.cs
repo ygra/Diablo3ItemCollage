@@ -28,12 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.label1 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
             this.label2 = new System.Windows.Forms.Label();
             this.itemListBox1 = new ItemCollage.ItemListBox();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -84,7 +82,6 @@
             this.itemListBox1.Name = "itemListBox1";
             this.itemListBox1.Size = new System.Drawing.Size(249, 306);
             this.itemListBox1.TabIndex = 4;
-            this.toolTip1.SetToolTip(this.itemListBox1, "Click item to remove it from the list");
             // 
             // Form1
             // 
@@ -116,7 +113,6 @@
         private System.Windows.Forms.Panel panel1;
         private ItemListBox itemListBox1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
 
