@@ -74,7 +74,8 @@ namespace ItemCollage
             var location = PointToScreen(this.Location);
             location.Offset(this.Width, 0);
             tooltip.Location = location;
-            tooltip.Show();
+            if (!tooltip.Visible)
+                tooltip.Show(this.FindForm());
         }
 
         protected override void OnMouseLeave(EventArgs e)
