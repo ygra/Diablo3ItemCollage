@@ -100,9 +100,9 @@
       <Name>Helpers</Name>
       <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\ItemExtraction\ItemExtraction.csproj">
+    <ProjectReference Include="..\LibItemCollage\LibItemCollage.csproj">
       <Project>{6D6EDA58-E08D-41D1-A51A-14F048AFFB41}</Project>
-      <Name>ItemExtraction</Name>
+      <Name>LibItemCollage</Name>
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
@@ -125,7 +125,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="lib\Helpers.dll" />
-    <EmbeddedResource Include="lib\ItemExtraction.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="lib\LibItemCollage.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

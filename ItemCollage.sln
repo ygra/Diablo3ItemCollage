@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", 
 		{C431BF48-8EA6-4513-8D24-F5A64D6A2CBC} = {C431BF48-8EA6-4513-8D24-F5A64D6A2CBC}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ItemExtraction", "ItemExtraction\ItemExtraction.csproj", "{6D6EDA58-E08D-41D1-A51A-14F048AFFB41}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibItemCollage", "LibItemCollage\LibItemCollage.csproj", "{6D6EDA58-E08D-41D1-A51A-14F048AFFB41}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helpers", "Helpers\Helpers.csproj", "{D2432527-F9FD-46CC-B895-B51806AE57EF}"
 EndProject
