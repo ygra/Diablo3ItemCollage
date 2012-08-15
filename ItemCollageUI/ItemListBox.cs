@@ -100,8 +100,9 @@ namespace ItemCollage
 
         protected override void OnClientSizeChanged(EventArgs e)
         {
-            base.OnResize(e);
+            base.OnClientSizeChanged(e);
             UpdateScalingFactor();
+            // re-attach the data source, this is necessary to re-measure all items
             var items = DataSource;
             DataSource = null;
             DataSource = items;
