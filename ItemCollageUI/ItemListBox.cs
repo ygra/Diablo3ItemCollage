@@ -6,6 +6,8 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.ComponentModel;
 
 namespace ItemCollage
 {
@@ -17,9 +19,8 @@ namespace ItemCollage
         Queue<Bitmap> titleQueue;
 
         int? hotTrackedIndex = null;
-        int selectedIndex;
-        bool disableSelectedIndexChanged;
         double scalingFactor = 1;
+        int oldSelectedIndex = -1;
 
         public ItemListBox()
             : base()
@@ -50,30 +51,35 @@ namespace ItemCollage
             return ClientRectangle.Width - 4;
         }
 
-        protected override void OnMeasureItem(MeasureItemEventArgs e)
+        public new int GetItemHeight(int index)
         {
-            Debug.Print("MeasureItem {0}", e.Index);
+            int height;
+            var item = (Bitmap)this.Items[index];
 
-            if (e.Index < 0 || e.Index >= Items.Count) return;
-
-            var item = (Bitmap)this.Items[e.Index];
-
-            if (e.Index == selectedIndex)
+            if (index == SelectedIndex)
             {
                 // show full item if selected
-                e.ItemHeight = (int)(item.Height * scalingFactor);
+                height = (int)(item.Height * scalingFactor);
             }
             else
             {
                 // show only the title
                 var title = GetTitle(item);
-                e.ItemHeight = (int)(title.Height * scalingFactor);
+                height = (int)(title.Height * scalingFactor);
             }
 
             // leave a little more space
-            e.ItemHeight += 4;
+            height += 4;
+            return height;
+        }
+
+        protected override void OnMeasureItem(MeasureItemEventArgs e)
+        {
+            if (e.Index < 0 || e.Index >= Items.Count) return;
+
+            e.ItemHeight = GetItemHeight(e.Index);
+
             base.OnMeasureItem(e);
-            Debug.Print(" -- {0}", e.ItemHeight);
         }
 
         private Bitmap GetBrighter(Bitmap bmp)
@@ -112,14 +118,10 @@ namespace ItemCollage
 
         protected override void OnSelectedIndexChanged(EventArgs e)
         {
-            if (disableSelectedIndexChanged) return;
             base.OnSelectedIndexChanged(e);
-            selectedIndex = SelectedIndex;
-            disableSelectedIndexChanged = true;
-            RecreateHandle();
-            disableSelectedIndexChanged = false;
-            if (selectedIndex != -1)
-                Invalidate(GetItemRectangle(selectedIndex));
+            UpdateItemHeight(SelectedIndex);
+            UpdateItemHeight(oldSelectedIndex);
+            Refresh();
         }
 
         protected override void OnMouseLeave(EventArgs e)
@@ -144,15 +146,25 @@ namespace ItemCollage
                     .Min();
         }
 
+        private void UpdateItemHeight()
+        {
+            for (int i = 0; i < Items.Count; i++)
+            {
+                SendMessage(Handle, LB_SETITEMHEIGHT, i, GetItemHeight(i));
+            }
+            Refresh();
+        }
+
+        private void UpdateItemHeight(int index)
+        {
+            if (index < 0 || index >= Items.Count) return;
+            SendMessage(Handle, LB_SETITEMHEIGHT, index, GetItemHeight(index));
+        }
+
         protected override void OnClientSizeChanged(EventArgs e)
         {
             base.OnResize(e);
             UpdateScalingFactor();
-            selectedIndex = SelectedIndex;
-            if (IsHandleCreated)
-            {
-                //RecreateHandle();
-            }
         }
 
         protected override void OnDrawItem(DrawItemEventArgs e)
@@ -161,7 +173,7 @@ namespace ItemCollage
 
             var item = (Bitmap)this.Items[e.Index];
 
-            var image = e.Index == selectedIndex ? item : GetTitle(item);
+            var image = e.Index == SelectedIndex ? item : GetTitle(item);
 
             if (e.Index == hotTrackedIndex)
                 image = GetBrighter(image);
@@ -175,5 +187,14 @@ namespace ItemCollage
             e.Graphics.FillRectangle(Brushes.Black, e.Bounds);
             e.Graphics.DrawImage(image, destRect, new Rectangle(new Point(), image.Size), GraphicsUnit.Pixel);
         }
+
+        public const int LB_SETITEMHEIGHT = 0x01a0;
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, int wParam, int lParam);
+    }
+
+    class ItemList : BindingList<Bitmap>
+    {
+
     }
 }
