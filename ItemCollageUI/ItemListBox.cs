@@ -66,7 +66,7 @@ namespace ItemCollage
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
-            var itemIndex = IndexFromPoint(e.X, e.Y);
+            var itemIndex = (short)IndexFromPoint(e.X, e.Y);
             if (itemIndex == NoMatches) return;
             
             var item = Items[itemIndex] as Bitmap;
