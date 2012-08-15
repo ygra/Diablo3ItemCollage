@@ -127,8 +127,10 @@ namespace ItemCollage
         protected override void OnMouseLeave(EventArgs e)
         {
             base.OnMouseLeave(e);
+            var oldHotTrackedIndex = hotTrackedIndex;
             hotTrackedIndex = null;
-            Refresh();
+            if (oldHotTrackedIndex != null)
+                Invalidate(GetItemRectangle((int)oldHotTrackedIndex));
         }
 
         private double GetScalingFactor(int titleWidth)
@@ -165,6 +167,7 @@ namespace ItemCollage
         {
             base.OnResize(e);
             UpdateScalingFactor();
+            UpdateItemHeight();
         }
 
         protected override void OnDrawItem(DrawItemEventArgs e)
@@ -181,8 +184,9 @@ namespace ItemCollage
             var drawWidth = image.Width * scalingFactor;
             var x = (drawWidth >= GetItemWidth()) ? 2 : (int)(GetItemWidth() / 2 - drawWidth / 2);
 
-            var destRect = e.Bounds;
-            destRect.Inflate(-2 * x, -4);
+            var destRect = new Rectangle(e.Bounds.Location,
+                new Size((int)drawWidth, (int)(image.Height * scalingFactor)));
+            destRect.Offset(GetItemWidth() / 2 - destRect.Width / 2 , 2);
 
             e.Graphics.FillRectangle(Brushes.Black, e.Bounds);
             e.Graphics.DrawImage(image, destRect, new Rectangle(new Point(), image.Size), GraphicsUnit.Pixel);
