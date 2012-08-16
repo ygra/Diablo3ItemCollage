@@ -108,7 +108,8 @@ namespace ItemCollage
 
         private void UpdateLabel()
         {
-            label1.Text = string.Format("{0} item{1} copied.", items.Count,
+            label1.Text = string.Format("{0} item{1}",
+                items.Count == 0 ? "No" : items.Count.ToString(),
                 items.Count != 1 ? "s" : "");
         }
 
