@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.ComponentModel;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace ItemCollage
 {
     public class ItemListBox : ListBox
     {
         const int titleCount = 50;
+        const int xMargin = 4;
+        const int yMargin = 2;
 
         IDictionary<Bitmap, Bitmap> titles;
         Queue<Bitmap> titleQueue;
@@ -47,9 +44,9 @@ namespace ItemCollage
             return title;
         }
 
-        private int GetItemWidth()
+        private int GetListWidth()
         {
-            return ClientRectangle.Width - 4;
+            return ClientRectangle.Width - xMargin;
         }
 
         protected override void OnMeasureItem(MeasureItemEventArgs e)
@@ -57,10 +54,12 @@ namespace ItemCollage
             base.OnMeasureItem(e);
             if (e.Index < 0 || e.Index >= Items.Count) return;
 
+            UpdateScalingFactor();
+
             var item = (Bitmap)this.Items[e.Index];
 
             var title = GetTitle(item);
-            e.ItemHeight = (int)(title.Height * scalingFactor) + 4;
+            e.ItemHeight = (int)(title.Height * scalingFactor) + 2 * yMargin;
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
@@ -68,7 +67,7 @@ namespace ItemCollage
             base.OnMouseMove(e);
             var itemIndex = (short)IndexFromPoint(e.X, e.Y);
             if (itemIndex == NoMatches) return;
-            
+
             var item = Items[itemIndex] as Bitmap;
             tooltip.Image = item;
             var location = PointToScreen(this.Location);
@@ -86,16 +85,17 @@ namespace ItemCollage
 
         private double GetScalingFactor(int titleWidth)
         {
-            var itemWidth = GetItemWidth();
-            if (titleWidth < itemWidth) return 1;
-            return titleWidth / itemWidth;
+            var listWidth = GetListWidth();
+            if (listWidth >= titleWidth) return 1;
+            return (double)listWidth / titleWidth;
         }
 
         public void UpdateScalingFactor()
         {
             scalingFactor =
                 Items.Cast<Bitmap>()
-                    .Select(b => GetScalingFactor(b.Width)).DefaultIfEmpty(1)
+                    .Select(b => GetScalingFactor(GetTitle(b).Width))
+                    .DefaultIfEmpty(1)
                     .Min();
         }
 
@@ -117,15 +117,19 @@ namespace ItemCollage
 
             var image = GetTitle(item);
 
-            var drawWidth = image.Width * scalingFactor;
-            var x = (drawWidth >= GetItemWidth()) ? 2 : (int)(GetItemWidth() / 2 - drawWidth / 2);
+            var drawWidth = (int)(image.Width * scalingFactor);
+            var drawHeight = (int)(image.Height * scalingFactor);
 
             var destRect = new Rectangle(e.Bounds.Location,
-                new Size((int)drawWidth, (int)(image.Height * scalingFactor)));
-            destRect.Offset(GetItemWidth() / 2 - destRect.Width / 2, 2);
+                new Size(drawWidth, drawHeight));
+
+            // we need to manually add xMargin to the offset again, as it's
+            // already subtracted from the actual list width in GetListWidth
+            destRect.Offset((GetListWidth() - drawWidth + xMargin) / 2, yMargin);
 
             e.Graphics.FillRectangle(Brushes.Black, e.Bounds);
-            e.Graphics.DrawImage(image, destRect, new Rectangle(new Point(), image.Size), GraphicsUnit.Pixel);
+            e.Graphics.DrawImage(image, destRect,
+                new Rectangle(new Point(), image.Size), GraphicsUnit.Pixel);
         }
     }
 }

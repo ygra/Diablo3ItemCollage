@@ -90,7 +90,6 @@ namespace ItemCollage
             }
 
             items.Add(item);
-            itemListBox1.UpdateScalingFactor();
             Debug.Print("{0} items in ListBox", itemListBox1.Items.Count);
             //pictureBox1.Image = item;
             Clipboard.SetImage(item);
