@@ -64,6 +64,10 @@ namespace ItemCollage
 
             var title = GetTitle(item);
             e.ItemHeight = (int)(title.Height * scalingFactor) + 2 * yMargin;
+
+            // account for the separator
+            if (e.Index > 0)
+                e.ItemHeight += 3;
         }
 
         protected override void OnMouseClick(MouseEventArgs e)
@@ -132,7 +136,20 @@ namespace ItemCollage
             // already subtracted from the actual list width in GetListWidth
             destRect.Offset((GetListWidth() - drawWidth + xMargin) / 2, yMargin);
 
+            // background
             e.Graphics.FillRectangle(Brushes.Black, e.Bounds);
+
+            // separator
+            if (e.Index > 0)
+            {
+                e.Graphics.DrawLine(Pens.DimGray,
+                    e.Bounds.Left + 5, e.Bounds.Top + 1,
+                    e.Bounds.Right - 5, e.Bounds.Top + 1);
+
+                destRect.Offset(0, 3);
+            }
+
+            // title
             e.Graphics.DrawImage(image, destRect,
                 new Rectangle(new Point(), image.Size), GraphicsUnit.Pixel);
         }
