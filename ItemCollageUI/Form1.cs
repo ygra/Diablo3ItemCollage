@@ -245,12 +245,25 @@ namespace ItemCollage
             if (itemIndex == ListBox.NoMatches) return;
 
             var item = items[itemIndex];
+            if (tooltip.Image == item && tooltip.Visible) return;
+
             tooltip.Image = item;
             var location = PointToScreen(itemListBox1.Location);
             location.Offset(itemListBox1.Width, 0);
-            tooltip.Location = location;
-            if (!tooltip.Visible)
+
+            var position = new Rectangle(location, tooltip.Size);
+            var bounds = Screen.FromPoint(e.Location).Bounds;
+            if (position.Right > bounds.Right)
+                location.Offset(-(itemListBox1.Width + tooltip.Width), 0);
+            if (position.Bottom > bounds.Bottom)
+                location.Y = bounds.Bottom - tooltip.Height;
+
+            if(!tooltip.Visible)
                 tooltip.Show(this);
+
+            // this has to happen after Show, as otherwise it's ignored until
+            // the tooltip gets redrawn
+            tooltip.Location = location;
         }
 
         private void itemListBox1_MouseLeave(object sender, EventArgs e)
