@@ -43,7 +43,8 @@ namespace ItemCollage
 
             UpdateLabel();
 
-            Width = (int)(Screen.FromControl(this).Bounds.Width / 6.7);
+            var screenSize = Screen.FromControl(this).Bounds;
+            Width = (int)(0.1 * screenSize.Width * screenSize.Width / screenSize.Height);
 
             CheckForUpdates();
 
