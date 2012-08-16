@@ -29,7 +29,8 @@ namespace ItemCollage
 
             // Initialise hotkeys
             hotkeys = new Dictionary<GlobalHotkey, Action> {
-                { new GlobalHotkey(Constants.NOMOD, Keys.F1, this), GrabItem }
+                { new GlobalHotkey(Constants.NOMOD, Keys.F1, this), GrabItem },
+                { new GlobalHotkey(Constants.NOMOD, Keys.F2, this), CreateCollage },
             };
 
             // register hotkeys
@@ -46,11 +47,6 @@ namespace ItemCollage
             {
                 button1.Enabled = items.Count > 0;
             };
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            GrabItem();
         }
 
         private void GrabItem()
@@ -186,47 +182,48 @@ namespace ItemCollage
             UpdateLabel();
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void CreateCollage()
         {
-            try
+            if (items.Count == 0) return;
+
+            int numCols = (int)Math.Min(Math.Ceiling(Math.Sqrt(items.Count)), 4);
+            int w = items[0].Width;
+            var colLengths = new int[numCols];
+
+            foreach (var item in items)
             {
-                if (items.Count == 0) return;
-
-                int numCols = (int)Math.Min(Math.Ceiling(Math.Sqrt(items.Count)), 4);
-                int w = items[0].Width;
-                var colLengths = new int[numCols];
-
-                foreach (var item in items)
-                {
-                    var col = Helper.Range(0, numCols - 1).MinBy(i => colLengths[i]);
-                    colLengths[col] += item.Height;
-                }
-
-                Bitmap b = new Bitmap(numCols * w, colLengths.Max(), PixelFormat.Format16bppRgb555);
-                Graphics g = Graphics.FromImage(b);
-                colLengths = new int[numCols];
-
-                int itemIndex = 1;
-
-                foreach (var item in items)
-                {
-                    var col = Helper.Range(0, numCols - 1).MinBy(i => colLengths[i]);
-                    g.DrawImageUnscaledAndClipped(item, new Rectangle(w * col, colLengths[col], w, item.Height));
-                    g.DrawString(itemIndex.ToString(), new Font("Arial", 20, FontStyle.Bold), Brushes.White, col * w + 10, colLengths[col] + 10);
-                    colLengths[col] += item.Height;
-                    itemIndex++;
-                }
-
-                var picFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-                var fileName = string.Format("items-{0:yyyy-MM-dd-HH-mm-ss}.png", DateTime.UtcNow);
-                var file = Path.Combine(picFolder, fileName);
-                b.Save(file);
-                Clipboard.SetImage(b);
-                items.Clear();
-                //pictureBox1.Image = null;
-                label1.Text = "Collage saved";
+                var col = Helper.Range(0, numCols - 1).MinBy(i => colLengths[i]);
+                colLengths[col] += item.Height;
             }
-            catch { }
+
+            Bitmap b = new Bitmap(numCols * w, colLengths.Max(), PixelFormat.Format16bppRgb555);
+            Graphics g = Graphics.FromImage(b);
+            colLengths = new int[numCols];
+
+            int itemIndex = 1;
+
+            foreach (var item in items)
+            {
+                var col = Helper.Range(0, numCols - 1).MinBy(i => colLengths[i]);
+                g.DrawImageUnscaledAndClipped(item, new Rectangle(w * col, colLengths[col], w, item.Height));
+                g.DrawString(itemIndex.ToString(), new Font("Arial", 20, FontStyle.Bold), Brushes.White, col * w + 10, colLengths[col] + 10);
+                colLengths[col] += item.Height;
+                itemIndex++;
+            }
+
+            var picFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+            var fileName = string.Format("items-{0:yyyy-MM-dd-HH-mm-ss}.png", DateTime.UtcNow);
+            var file = Path.Combine(picFolder, fileName);
+            b.Save(file);
+            Clipboard.SetImage(b);
+
+            items.Clear();
+            label1.Text = "Collage saved";
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            CreateCollage();
         }
 
         private void Form1_Load(object sender, EventArgs e)
