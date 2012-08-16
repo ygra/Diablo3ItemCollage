@@ -40,7 +40,12 @@ namespace ItemCollage
 
             CheckForUpdates();
 
+            // Data binding
             itemListBox1.DataSource = items;
+            items.ListChanged += delegate
+            {
+                button1.Enabled = items.Count > 0;
+            };
         }
 
         private void button1_Click(object sender, EventArgs e)
