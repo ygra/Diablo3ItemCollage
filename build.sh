@@ -40,7 +40,7 @@ version="${version//-/.}"
 echo "Bumping version..."
 # echo \r\n so git doesn't complain about line endings
 echo -ne "$version\r\n" > ./version
-sed -ri "s/^(\[assembly:\s+AssemblyVersion)\(\"[^\"]+\"\)/\1(\"$version.0\")/" \
+sed -bri "s/^(\[assembly:\s+AssemblyVersion)\(\"[^\"]+\"\)/\1(\"$version.0\")/" \
        ItemCollageUI/Properties/AssemblyInfo.cs
 
 echo "Compiling..."
@@ -55,6 +55,7 @@ mv ItemCollageUI/bin/Release/ItemCollage.exe "$path"
 
 echo "Preparing commit and tag"
 git add version
+git add ItemCollageUI/Properties/AssemblyInfo.cs
 git commit -m "Bump version to $tag"
 [ -n "$nightly"] && git tag "$tag"
 
@@ -64,7 +65,7 @@ size="$(du -b "$path" | awk '{print $1}')"
 resp=$(curl -s -u "$user" \
             -d "{ \"name\": \"$file\", \
                  \"size\": $size, \
-                 \"description\": \"Testing build script $tag\" }" \
+                 \"description\": \"Release version $tag\" }" \
             https://api.github.com/repos/ygra/Diablo3ItemCollage/downloads
       )
 
