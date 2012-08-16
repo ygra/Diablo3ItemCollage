@@ -219,7 +219,7 @@ namespace ItemCollage
             }
 
             var picFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-            var fileName = string.Format("items-{0:yyyy-MM-dd-HH-mm-ss}.png", DateTime.UtcNow);
+            var fileName = string.Format("items-{0:yyyyMMdd-HHmmss}.png", DateTime.Now);
             var file = Path.Combine(picFolder, fileName);
             b.Save(file);
             Clipboard.SetImage(b);
