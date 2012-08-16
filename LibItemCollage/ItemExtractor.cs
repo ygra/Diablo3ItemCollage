@@ -188,13 +188,13 @@ namespace ItemCollage
                 return title;
             }
 
-            // transform the image and remove 25% of the brightness to get
+            // transform the image and remove 26% of the brightness to get
             // rid of the outer frame and the background color gradient
             ColorMatrix grayscale = new ColorMatrix(new float[][]
             {
-                new float[] {0.33f, 0.33f, 0.33f, 0, 0},
-                new float[] {0.33f, 0.33f, 0.33f, 0, 0},
-                new float[] {0.33f, 0.33f, 0.33f, 0, 0},
+                new float[] {0.30f, 0.30f, 0.30f, 0, 0},
+                new float[] {0.40f, 0.40f, 0.40f, 0, 0},
+                new float[] {0.30f, 0.30f, 0.30f, 0, 0},
                 new float[] {0, 0, 0, 1, 0},
                 new float[] {-0.26f, -0.26f, -0.26f, 0, 1}
             });
