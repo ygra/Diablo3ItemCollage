@@ -30,8 +30,11 @@ namespace ItemCollage
 
             // Initialise hotkeys
             hotkeys = new Dictionary<GlobalHotkey, Action> {
-                { new GlobalHotkey(Constants.NOMOD, Keys.F1, this), GrabItem },
+                { new GlobalHotkey(Constants.NOMOD, Keys.F1, this), () => GrabItem() },
                 { new GlobalHotkey(Constants.NOMOD, Keys.F2, this), CreateCollage },
+#if DEBUG
+                { new GlobalHotkey(Constants.NOMOD, Keys.F3, this), () => GrabItem(true) },
+#endif
             };
 
             // register hotkeys
@@ -57,7 +60,7 @@ namespace ItemCollage
             };
         }
 
-        private void GrabItem()
+        private void GrabItem(bool saveScreenshot = false)
         {
             Stopwatch sw = new Stopwatch();
 
@@ -67,20 +70,6 @@ namespace ItemCollage
             this.Opacity = 0;
             var screen = TakeScreenshot(ref cursorPos);
             this.Opacity = 1;
-
-#if DEBUG
-            sw.Stop();
-            // save picture for future testing
-            var baseName = string.Format("itemat-{0:yyyy-MM-dd-HH-mm-ss}-P{1}-{2}",
-                DateTime.UtcNow, cursorPos.X, cursorPos.Y);
-            var fileName = baseName + ".in.png";
-            var picFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-            var testFolder = Path.Combine(picFolder, "ExtractTest");
-            if (!Directory.Exists(testFolder)) Directory.CreateDirectory(testFolder);
-            var file = Path.Combine(testFolder, fileName);
-            screen.Save(file);
-            sw.Start();
-#endif
 
             var ie = new ItemExtractor(screen, cursorPos);
             var item = ie.ExtractItem();
@@ -98,10 +87,20 @@ namespace ItemCollage
             Debug.Print("{0} items in ListBox", itemListBox1.Items.Count);
             Clipboard.SetImage(item);
 
-#if DEBUG
-            var outfile = Path.Combine(testFolder, baseName + ".out.png");
-            item.Save(outfile);
-#endif
+            if(saveScreenshot)
+            {
+                // save picture for future testing
+                var baseName = string.Format("itemat-{0:yyyy-MM-dd-HH-mm-ss}-P{1}-{2}",
+                    DateTime.UtcNow, cursorPos.X, cursorPos.Y);
+                var fileName = baseName + ".in.png";
+                var picFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+                var testFolder = Path.Combine(picFolder, "ExtractTest");
+                if (!Directory.Exists(testFolder)) Directory.CreateDirectory(testFolder);
+                var file = Path.Combine(testFolder, fileName);
+                screen.Save(file);
+                var outfile = Path.Combine(testFolder, baseName + ".out.png");
+                item.Save(outfile);
+            }
 
             UpdateLabel();
         }
