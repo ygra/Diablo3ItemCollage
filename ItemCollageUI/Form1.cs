@@ -43,6 +43,13 @@ namespace ItemCollage
 
             // Data binding
             itemListBox1.DataSource = items;
+            itemListBox1.ItemClick += delegate(object sender,
+                ItemListBox.ItemClickEventArgs e)
+            {
+                items.RemoveAt(e.Index);
+                UpdateLabel();
+            };
+
             items.ListChanged += delegate
             {
                 button1.Enabled = items.Count > 0;

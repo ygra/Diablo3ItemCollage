@@ -19,6 +19,13 @@ namespace ItemCollage
 
         ImageTooltip tooltip;
 
+        public class ItemClickEventArgs : EventArgs
+        {
+            public int Index { get; set; }
+        }
+
+        public event EventHandler<ItemClickEventArgs> ItemClick;
+
         public ItemListBox()
             : base()
         {
@@ -60,6 +67,18 @@ namespace ItemCollage
 
             var title = GetTitle(item);
             e.ItemHeight = (int)(title.Height * scalingFactor) + 2 * yMargin;
+        }
+
+        protected override void OnMouseClick(MouseEventArgs e)
+        {
+            base.OnMouseClick(e);
+            var itemIndex = (short)IndexFromPoint(e.X, e.Y);
+            if (itemIndex == NoMatches) return;
+
+            if (ItemClick != null) ItemClick(this, new ItemClickEventArgs
+            {
+                Index = itemIndex
+            });
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
