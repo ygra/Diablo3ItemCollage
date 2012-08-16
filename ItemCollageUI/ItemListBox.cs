@@ -17,8 +17,6 @@ namespace ItemCollage
 
         double scalingFactor = 1;
 
-        ImageTooltip tooltip;
-
         public class ItemClickEventArgs : EventArgs
         {
             public int Index { get; set; }
@@ -33,7 +31,6 @@ namespace ItemCollage
             this.DoubleBuffered = true;
             this.titles = new Dictionary<Bitmap, Bitmap>();
             this.titleQueue = new Queue<Bitmap>(titleCount + 1);
-            tooltip = new ImageTooltip();
         }
 
         private Bitmap GetTitle(Bitmap item)
@@ -84,22 +81,11 @@ namespace ItemCollage
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
-            var itemIndex = (short)IndexFromPoint(e.X, e.Y);
-            if (itemIndex == NoMatches) return;
-
-            var item = Items[itemIndex] as Bitmap;
-            tooltip.Image = item;
-            var location = PointToScreen(this.Location);
-            location.Offset(this.Width, 0);
-            tooltip.Location = location;
-            if (!tooltip.Visible)
-                tooltip.Show(this.FindForm());
         }
 
         protected override void OnMouseLeave(EventArgs e)
         {
             base.OnMouseLeave(e);
-            tooltip.Hide();
         }
 
         private double GetScalingFactor(int titleWidth)

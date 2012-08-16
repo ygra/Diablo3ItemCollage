@@ -22,6 +22,7 @@ namespace ItemCollage
 
         IDictionary<GlobalHotkey, Action> hotkeys;
         BindingList<Image> items = new BindingList<Image>();
+        ImageTooltip tooltip = new ImageTooltip();
 
         public Form1()
         {
@@ -236,6 +237,25 @@ namespace ItemCollage
         private void Form1_Load(object sender, EventArgs e)
         {
             this.TopMost = true;
+        }
+
+        private void itemListBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            var itemIndex = (short)itemListBox1.IndexFromPoint(e.X, e.Y);
+            if (itemIndex == ListBox.NoMatches) return;
+
+            var item = items[itemIndex];
+            tooltip.Image = item;
+            var location = PointToScreen(itemListBox1.Location);
+            location.Offset(itemListBox1.Width, 0);
+            tooltip.Location = location;
+            if (!tooltip.Visible)
+                tooltip.Show(this);
+        }
+
+        private void itemListBox1_MouseLeave(object sender, EventArgs e)
+        {
+            tooltip.Hide();
         }
 
     }

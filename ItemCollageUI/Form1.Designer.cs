@@ -99,6 +99,8 @@
             this.itemListBox1.Name = "itemListBox1";
             this.itemListBox1.Size = new System.Drawing.Size(264, 288);
             this.itemListBox1.TabIndex = 4;
+            this.itemListBox1.MouseLeave += new System.EventHandler(this.itemListBox1_MouseLeave);
+            this.itemListBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.itemListBox1_MouseMove);
             // 
             // Form1
             // 
