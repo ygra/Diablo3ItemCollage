@@ -43,6 +43,8 @@ namespace ItemCollage
 
             UpdateLabel();
 
+            Width = (int)(Screen.FromControl(this).Bounds.Width / 6.7);
+
             CheckForUpdates();
 
             // Data binding
