@@ -93,8 +93,8 @@ namespace ItemCollage
             }
 
             items.Add(item);
+            itemListBox1.SelectedIndex = itemListBox1.Items.Count - 1;
             Debug.Print("{0} items in ListBox", itemListBox1.Items.Count);
-            //pictureBox1.Image = item;
             Clipboard.SetImage(item);
 
 #if DEBUG
