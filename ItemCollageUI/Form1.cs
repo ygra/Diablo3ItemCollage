@@ -90,7 +90,7 @@ namespace ItemCollage
             Debug.Print("{0} items in ListBox", itemListBox1.Items.Count);
             Clipboard.SetImage(item);
 
-            if(saveScreenshot)
+            if (saveScreenshot)
             {
                 // save picture for future testing
                 var baseName = string.Format("itemat-{0:yyyy-MM-dd-HH-mm-ss}-P{1}-{2}",
@@ -261,7 +261,7 @@ namespace ItemCollage
             if (position.Bottom > bounds.Bottom)
                 location.Y = bounds.Bottom - tooltip.Height;
 
-            if(!tooltip.Visible)
+            if (!tooltip.Visible)
                 tooltip.Show(this);
 
             // this has to happen after Show, as otherwise it's ignored until
