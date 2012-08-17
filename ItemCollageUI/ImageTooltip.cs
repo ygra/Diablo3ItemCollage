@@ -19,6 +19,14 @@ namespace ItemCollage
             ShowInTaskbar = false;
         }
 
+        protected override bool ShowWithoutActivation
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         protected override void OnPaintBackground(PaintEventArgs e)
         {
             e.Graphics.DrawImageUnscaled(image, 0, 0);
