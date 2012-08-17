@@ -166,12 +166,13 @@ namespace ItemCollage
             var bottom = Helper.Range(top + 1, bmp.Height - 1).First(y =>
                 bmp.IsRowBlack(y));
 
-            // remove the black border (move one further than necessary as there
-            // usually is one non-black pixel in the last border column)
+            // remove the black border by looking for the first column that's
+            // non-black from top to bottom - 1
             var left = Helper.Range(0, bmp.Width - 1).First(x =>
-                bmp.IsColumnBlack(x, top, bottom)) + 1;
+                bmp.IsColumnNonBlack(x, top, bottom - 1));
+            // like bottom, right is the first black column behind the title
             var right = Helper.Range(bmp.Width - 1, 0, -1).First(x =>
-                !bmp.IsColumnBlack(x, top, bottom)) - 1;
+                bmp.IsColumnNonBlack(x, top, bottom - 1)) + 1;
 
             if (!removeFrame)
             {

@@ -92,5 +92,37 @@ namespace ItemCollage
         {
             return Helper.Range(xstart, xend).All(x => b.IsBlackAt(x, y));
         }
+
+        public static bool IsColumnNonBlack(this Bitmap b, int x)
+        {
+            return b.IsColumnNonBlack(x, 0, b.Height - 1);
+        }
+
+        public static bool IsColumnNonBlack(this Bitmap b, int x, int ystart)
+        {
+            return b.IsColumnNonBlack(x, ystart, b.Height - 1);
+        }
+
+        public static bool IsColumnNonBlack(this Bitmap b, int x, int ystart,
+            int yend)
+        {
+            return Helper.Range(ystart, yend).All(y => !b.IsBlackAt(x, y));
+        }
+
+        public static bool IsRowNonBlack(this Bitmap b, int y)
+        {
+            return b.IsRowNonBlack(y, 0, b.Width - 1);
+        }
+
+        public static bool IsRowNonBlack(this Bitmap b, int y, int xstart)
+        {
+            return b.IsRowNonBlack(y, xstart, b.Width - 1);
+        }
+
+        public static bool IsRowNonBlack(this Bitmap b, int y, int xstart,
+            int xend)
+        {
+            return Helper.Range(xstart, xend).All(x => !b.IsBlackAt(x, y));
+        }
     }
 }
