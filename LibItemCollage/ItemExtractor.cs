@@ -220,11 +220,11 @@ namespace ItemCollage
             var innerBottom = Helper.Range(img.Height - 2, innerTop + 1, -1).First(y =>
                 !img.IsRowBlack(y)) + 1;
 
-            // first column that contains the text
-            var innerLeft = Helper.Range(0, img.Width - 1).First(x =>
+            // first column that contains the text (again, skip 1 column)
+            var innerLeft = Helper.Range(1, img.Width - 1).First(x =>
                 !img.IsColumnBlack(x, innerTop, innerBottom));
             // the first black column behind the item text
-            var innerRight = Helper.Range(img.Width - 1, 0, -1).First(x =>
+            var innerRight = Helper.Range(img.Width - 2, 0, -1).First(x =>
                 !img.IsColumnBlack(x, innerTop, innerBottom)) + 1;
 
             var nameFrame = new Rectangle(left + innerLeft, top + innerTop,
