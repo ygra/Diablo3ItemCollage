@@ -217,7 +217,8 @@ namespace ItemCollage
             {
                 var col = Helper.Range(0, numCols - 1).MinBy(i => colLengths[i]);
                 g.DrawImageUnscaledAndClipped(item, new Rectangle(w * col, colLengths[col], w, item.Height));
-                g.DrawString(itemIndex.ToString(), new Font("Arial", 20, FontStyle.Bold), Brushes.White, col * w + 10, colLengths[col] + 10);
+                if (items.Count > 1) // don't draw numbers for just a single item
+                    g.DrawString(itemIndex.ToString(), new Font("Arial", 20, FontStyle.Bold), Brushes.White, col * w + 10, colLengths[col] + 10);
                 colLengths[col] += item.Height;
                 itemIndex++;
             }
