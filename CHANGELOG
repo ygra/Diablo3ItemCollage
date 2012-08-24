@@ -1,0 +1,10 @@
+2012-08-24	v0.2.1
+
+* Improved item name extraction, which now works correctly for linked items.
+. Pop-up tooltip no longer steals focus.
+. Collage no longer draws numbers for just a single item.
+
+2012-08-16	v0.2
+
+* New UI which now shows a list of captured items. Hovering over an item shows a pop-up tooltip of the complete item. Clicking on any item in the list removes it.
+. Collage file name now uses local time instead of UTC.
