@@ -213,15 +213,15 @@ namespace ItemCollage
                     GraphicsUnit.Pixel, attribs);
             }
 
-            // skip first row at top/bottom, as there's sometimes a non-
+            // skip first row and column, as there's sometimes a non-
             // black pixel in there, and again don't check the full width
             // because of the close button for linked items
             // first row that contains the item name
             var innerTop = Helper.Range(1, img.Height - 1).First(y =>
-                !img.IsRowBlack(y, 0, img.Width / 2));
+                !img.IsRowBlack(y, 1, img.Width / 2));
             // again, the first row *below* the item name
             var innerBottom = Helper.Range(img.Height - 2, innerTop + 1, -1).First(y =>
-                !img.IsRowBlack(y)) + 1;
+                !img.IsRowBlack(y, 1)) + 1;
 
             // first column that contains the text (again, skip 1 column)
             var innerLeft = Helper.Range(1, img.Width - 1).First(x =>
