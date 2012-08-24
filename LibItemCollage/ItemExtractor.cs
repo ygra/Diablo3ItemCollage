@@ -157,9 +157,11 @@ namespace ItemCollage
         public static Bitmap ExtractItemName(Bitmap bmp, bool removeFrame)
         {
             // to separate the title from the actual item, simplify move down
-            // from the first non-black row until everything is black again
+            // from the first non-black row until everything is black again.
+            // we don't check the full width to work around the [X] on linked
+            // items
             var top = Helper.Range(0, bmp.Height - 1).First(y =>
-                !bmp.IsRowBlack(y));
+                !bmp.IsRowBlack(y, 0, bmp.Width / 2));
 
             // this is the first black row below the title, so the the title
             // height is given as bottom - top, not bottom - top + 1
@@ -212,10 +214,11 @@ namespace ItemCollage
             }
 
             // skip first row at top/bottom, as there's sometimes a non-
-            // black pixel in there
+            // black pixel in there, and again don't check the full width
+            // because of the close button for linked items
             // first row that contains the item name
             var innerTop = Helper.Range(1, img.Height - 1).First(y =>
-                !img.IsRowBlack(y));
+                !img.IsRowBlack(y, 0, img.Width / 2));
             // again, the first row *below* the item name
             var innerBottom = Helper.Range(img.Height - 2, innerTop + 1, -1).First(y =>
                 !img.IsRowBlack(y)) + 1;
