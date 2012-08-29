@@ -30,26 +30,26 @@ namespace ItemCollage
             if (twoDim)
             {
                 extentUp = p.Y -
-                    Enumerable.Range(0, p.Y)
+                    Helper.Range(0, p.Y)
                         .TakeWhile(y => bmp.IsBlackAt(p.X, p.Y - y) ||
                             ++skip < MAX_SKIP)
                         .Last(y => bmp.IsBlackAt(p.X, p.Y - y));
 
                 skip = 0;
                 extentDown =
-                    Enumerable.Range(p.Y, bmp.Height - p.Y)
+                    Helper.Range(p.Y, bmp.Height)
                         .TakeWhile(y => bmp.IsBlackAt(p.X, y) ||
                             ++skip < MAX_SKIP)
                         .Last(y => bmp.IsBlackAt(p.X, y));
             }
 
             var extentLeft = p.X -
-                Enumerable.Range(0, p.X)
+                Helper.Range(0, p.X)
                     .TakeWhile(x => bmp.IsBlackAt(p.X - x, extentDown))
                     .Last();
 
             var extentRight =
-                Enumerable.Range(p.X, bmp.Width)
+                Helper.Range(p.X, bmp.Width)
                     .TakeWhile(x => bmp.IsBlackAt(x, extentDown))
                     .Last();
 
