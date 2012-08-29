@@ -82,7 +82,13 @@ namespace Test
             var sw = new Stopwatch();
             sw.Start();
             var ie = new ItemCollage.ItemExtractor(bmp, cursorPos);
-            Bitmap result = (Bitmap)ie.ExtractItem();
+            Bitmap result = null;
+            try
+            {
+                result = (Bitmap)ie.ExtractItem(); ;
+            }
+            catch { }
+
             sw.Stop();
 
             var time = sw.Elapsed.TotalSeconds;
