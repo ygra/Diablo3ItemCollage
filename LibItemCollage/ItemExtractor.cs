@@ -67,8 +67,12 @@ namespace ItemCollage
         private Point FindOuter(Bitmap bmp, int x, int y, int step = 1, int searchWidth = 20)
         {
             var delta = step < 0 ? -1 : 1;
+            var max = delta > 0 ? bmp.Width - x : x;
+            if (searchWidth > max) throw new ArgumentOutOfRangeException();
+
             var target = Helper.Range(1, searchWidth, Math.Abs(step))
                 .FirstOrDefault(dx => bmp.IsBlackAt(x + delta * dx, y));
+
             target = x + delta * target;
 
             // if possible, move slightly to the left or right to get to the
