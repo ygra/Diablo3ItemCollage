@@ -75,7 +75,13 @@ namespace ItemCollage
             this.Opacity = 1;
 
             var ie = new ItemExtractor(screen, cursorPos);
-            var item = ie.ExtractItem();
+            Image item = null;
+            try
+            {
+                item = ie.ExtractItem();
+            }
+            catch { }
+
             sw.Stop();
             Debug.Print("Time for extraction: " + sw.Elapsed.ToString());
 
