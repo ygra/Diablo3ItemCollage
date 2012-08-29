@@ -54,6 +54,7 @@ namespace Test
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("failed ({0})", reason);
+                    Console.WriteLine(input.Name);
                 }
             }
 
