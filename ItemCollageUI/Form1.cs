@@ -91,10 +91,10 @@ namespace ItemCollage
                 return;
             }
 
+            Clipboard.SetImage(item);
             items.Add(item);
             itemListBox1.SelectedIndex = itemListBox1.Items.Count - 1;
             Debug.Print("{0} items in ListBox", itemListBox1.Items.Count);
-            Clipboard.SetImage(item);
 
             if (saveScreenshot)
             {
