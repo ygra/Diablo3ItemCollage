@@ -197,11 +197,6 @@ namespace ItemCollage
 
             items.RemoveAt(items.Count - 1);
 
-            //if (items.Count > 0)
-            //    pictureBox1.Image = items[items.Count - 1];
-            //else
-            //    pictureBox1.Image = null;
-
             UpdateLabel();
         }
 
