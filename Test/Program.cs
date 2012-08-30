@@ -102,20 +102,23 @@ namespace Test
             unsafe
             {
                 var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-                // no idea why, but we have to specify the pixel format as 32bpp
-                // RGB (even though the images are 24bpp RGB), otherwise theres
-                // sometimes non-matching bitmap data for identical images
                 var resultData = bmp.LockBits(rect, ImageLockMode.ReadOnly,
-                    PixelFormat.Format32bppRgb);
+                    bmp.PixelFormat);
                 var expectedData = expected.LockBits(rect, ImageLockMode.ReadOnly,
-                    PixelFormat.Format32bppRgb);
+                    expected.PixelFormat);
 
                 try
                 {
-                    if (memcmp(resultData.Scan0, expectedData.Scan0,
-                        resultData.Stride * resultData.Height) != 0)
+                    byte* resultStart = (byte*)resultData.Scan0;
+                    byte* expectedStart = (byte*)expectedData.Scan0;
+                    for (var y = 0; y < resultData.Height; y++)
                     {
-                        return string.Format("{0} bitmap data did not match", type);
+                        var resultRow = (IntPtr)(resultStart + y*resultData.Stride);
+                        var expectedRow = (IntPtr)(expectedStart + y*expectedData.Stride);
+                        if (memcmp(resultRow, expectedRow, resultData.Width*3) != 0)
+                        {
+                            return string.Format("{0} bitmap data did not match", type);
+                        }
                     }
                 }
                 finally
