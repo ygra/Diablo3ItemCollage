@@ -19,12 +19,14 @@ namespace Test
             Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
             "ExtractTest");
         static double extractTime = 0.0;
+        static double extractTitleTime = 0.0;
 
         static void Main(string[] args)
         {
             if (!Directory.Exists(folderPath))
             {
                 Debug.Fail("Test directory does not exist");
+                return;
             }
 
             var folder = new DirectoryInfo(folderPath);
@@ -39,12 +41,13 @@ namespace Test
             {
                 var infile = input.FullName;
                 var outfile = infile.Replace(".in.png", ".out.png");
+                var titlefile = infile.Replace(".in.png", ".title.png");
 
                 Console.ResetColor();
                 Console.Write(string.Format("Test {0}/{1}... ", ++test, numTests));
 
-                string reason;
-                if (CompareExtraction(infile, outfile, out reason))
+                string reason = CompareItemExtraction(infile, outfile, titlefile);
+                if (reason == "")
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("passed!");
@@ -62,16 +65,76 @@ namespace Test
 
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("{0} of {1} tests succeeded.", success, numTests);
-            Console.WriteLine("Time taken: {0} ({1}s in extraction)", sw.Elapsed, extractTime);
+            Console.WriteLine("Time taken: {0} total", sw.Elapsed);
+            Console.WriteLine("Extraction: {0:F3}s - Titles: {1:F3}s", extractTime,
+                extractTitleTime);
         }
 
-        private static bool CompareExtraction(string infile, string outfile, out string reason)
+        private static string CompareImageResult(Bitmap bmp, string file, string type)
+        {
+            var exist = File.Exists(file);
+            if (bmp == null)
+            {
+                if (exist)
+                {
+                    return string.Format("{0} not found", type);
+                }
+                else
+                {
+                    return "";
+                }
+            }
+
+            if (!exist)
+            {
+                return string.Format("unexpectedly found {0}", type);
+            }
+
+            var expected = new Bitmap(file);
+            if (expected.Width != bmp.Width ||
+                expected.Height != bmp.Height)
+            {
+                return string.Format(
+                    "{0} dimension does not match, expected {1}/{2}, got {3}/{4}",
+                    type, expected.Width, expected.Height, bmp.Width, bmp.Height);
+            }
+
+            unsafe
+            {
+                var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+                // no idea why, but we have to specify the pixel format as 32bpp
+                // RGB (even though the images are 24bpp RGB), otherwise theres
+                // sometimes non-matching bitmap data for identical images
+                var resultData = bmp.LockBits(rect, ImageLockMode.ReadOnly,
+                    PixelFormat.Format32bppRgb);
+                var expectedData = expected.LockBits(rect, ImageLockMode.ReadOnly,
+                    PixelFormat.Format32bppRgb);
+
+                try
+                {
+                    if (memcmp(resultData.Scan0, expectedData.Scan0,
+                        resultData.Stride * resultData.Height) != 0)
+                    {
+                        return string.Format("{0} bitmap data did not match", type);
+                    }
+                }
+                finally
+                {
+                    bmp.UnlockBits(resultData);
+                    expected.UnlockBits(expectedData);
+                }
+            }
+
+            return "";
+        }
+
+        private static string CompareItemExtraction(string infile, string outfile,
+            string titlefile)
         {
             var match = cursorPattern.Match(infile);
             if (!match.Success)
             {
-                reason = "failed to extract cursor position!";
-                return false;
+                return "failed to extract cursor position!";
             }
 
             var bmp = new Bitmap(infile);
@@ -82,79 +145,52 @@ namespace Test
             var sw = new Stopwatch();
             sw.Start();
             var ie = new ItemCollage.ItemExtractor(bmp, cursorPos);
-            Bitmap result = null;
+            Bitmap item = null;
             try
             {
-                result = (Bitmap)ie.ExtractItem(); ;
+                item = (Bitmap)ie.ExtractItem();
             }
             catch { }
 
             sw.Stop();
 
-            var time = sw.Elapsed.TotalSeconds;
-            extractTime += time;
+            var itemTime = sw.Elapsed.TotalSeconds;
+            extractTime += itemTime;
+            Console.Write("(");
+            WriteTime(itemTime);
+
+            var result = CompareImageResult(item, outfile, "item");
+            if (result == "")
+            {
+                Bitmap title = null;
+                if (item != null)
+                {
+                    sw.Reset();
+                    sw.Start();
+                    title = ItemCollage.ItemExtractor.ExtractItemName(item, true);
+                    sw.Stop();
+
+                    var titleTime = sw.Elapsed.TotalSeconds;
+                    extractTitleTime += titleTime;
+                    Console.Write(" - ");
+                    WriteTime(titleTime);
+
+                }
+
+                result = CompareImageResult(title, titlefile, "title");
+            }
+
+            Console.Write(") ");
+            return result;
+        }
+
+        private static void WriteTime(double time)
+        {
             if (time > 0.1) Console.ForegroundColor = ConsoleColor.Yellow;
             else if (time > 0.2) Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write("({0}) ", sw.Elapsed);
+
+            Console.Write("{0:F3}s", time);
             Console.ResetColor();
-
-            var exist = File.Exists(outfile);
-            if (result == null)
-            {
-                if (exist)
-                {
-                    reason = "Item not found";
-                    return false;
-                }
-                else
-                {
-                    reason = "";
-                    return true;
-                }
-            }
-
-            if (!exist)
-            {
-                reason = "Unexpectedly found item";
-                return false;
-            }
-
-            var expected = new Bitmap(outfile);
-            if (expected.Width != result.Width ||
-                expected.Height != result.Height)
-            {
-                reason = string.Format(
-                    "Dimension does not match, expected {0}/{1}, got {2}/{3}",
-                    expected.Width, expected.Height, result.Width, result.Height);
-                return false;
-            }
-
-            unsafe
-            {
-                var rect = new Rectangle(0, 0, result.Width, result.Height);
-                var resultData = result.LockBits(rect, ImageLockMode.ReadOnly,
-                    result.PixelFormat);
-                var expectedData = expected.LockBits(rect, ImageLockMode.ReadOnly,
-                    expected.PixelFormat);
-
-                try
-                {
-                    if (memcmp(resultData.Scan0, expectedData.Scan0,
-                        resultData.Stride * resultData.Height) != 0)
-                    {
-                        reason = "Bitmap data did not match";
-                        return false;
-                    }
-                }
-                finally
-                {
-                    result.UnlockBits(resultData);
-                    expected.UnlockBits(expectedData);
-                }
-            }
-
-            reason = "";
-            return true;
         }
 
         [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]

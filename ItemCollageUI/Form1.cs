@@ -101,14 +101,20 @@ namespace ItemCollage
                 // save picture for future testing
                 var baseName = string.Format("itemat-{0:yyyy-MM-dd-HH-mm-ss}-P{1}-{2}",
                     DateTime.UtcNow, cursorPos.X, cursorPos.Y);
-                var fileName = baseName + ".in.png";
                 var picFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
                 var testFolder = Path.Combine(picFolder, "ExtractTest");
                 if (!Directory.Exists(testFolder)) Directory.CreateDirectory(testFolder);
-                var file = Path.Combine(testFolder, fileName);
+
+                var file = Path.Combine(testFolder, baseName + ".in.png");
                 screen.Save(file);
+
                 var outfile = Path.Combine(testFolder, baseName + ".out.png");
                 item.Save(outfile);
+
+                var titlefile = Path.Combine(testFolder, baseName + ".title.png");
+                // TODO: use the list's cache
+                var title = ItemExtractor.ExtractItemName((Bitmap)item, true);
+                title.Save(titlefile);
             }
 
             UpdateLabel();
