@@ -160,24 +160,31 @@ namespace ItemCollage
 
         public static Bitmap ExtractItemName(Bitmap bmp, bool removeFrame)
         {
+            // first, remove the black border to the left and right
+            var left = Helper.Range(0, bmp.Width - 1).First(x =>
+                !bmp.IsColumnBlack(x));
+            // for the right border, we can't check from top to bottom because
+            // linked items have a non-black [X] at the top right, so we only
+            // check the bottom half
+            var right = Helper.Range(bmp.Width - 1, 0, -1).First(x =>
+                !bmp.IsColumnBlack(x, bmp.Height/2)) + 1;
+
             // to separate the title from the actual item, simplify move down
             // from the first non-black row until everything is black again.
             // we don't check the full width to work around the [X] on linked
-            // items
+            // items again
             var top = Helper.Range(0, bmp.Height - 1).First(y =>
-                !bmp.IsRowBlack(y, 0, bmp.Width / 2));
+                bmp.IsRowNonBlack(y, left, bmp.Width / 2)) - 1;
 
             // this is the first black row below the title, so the the title
             // height is given as bottom - top, not bottom - top + 1
             var bottom = Helper.Range(top + 1, bmp.Height - 1).First(y =>
-                bmp.IsRowBlack(y));
+                bmp.IsRowBlack(y, left, right));
 
-            // remove the black border by looking for the first column that's
-            // non-black from top to bottom - 1
-            var left = Helper.Range(0, bmp.Width - 1).First(x =>
+            // remove any left-over semi-black border columns
+            left = Helper.Range(left, bmp.Width - 1).First(x =>
                 bmp.IsColumnNonBlack(x, top, bottom - 1));
-            // like bottom, right is the first black column behind the title
-            var right = Helper.Range(bmp.Width - 1, 0, -1).First(x =>
+            right = Helper.Range(right, 0, -1).First(x =>
                 bmp.IsColumnNonBlack(x, top, bottom - 1)) + 1;
 
             if (!removeFrame)
