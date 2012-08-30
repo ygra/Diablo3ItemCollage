@@ -235,11 +235,16 @@ namespace ItemCollage
             var innerBottom = Helper.Range(img.Height - 2, innerTop + 1, -1).First(y =>
                 !img.IsRowBlack(y, 1)) + 1;
 
+            // try to detect if the item is a linked one, so we can skip the X
+            var xLeft = Helper.Range(1, img.Width).TakeWhile(dx =>
+                !bmp.IsBlackAt(img.Width - dx, 0))
+                .LastOrDefault();
+
             // first column that contains the text (again, skip 1 column)
             var innerLeft = Helper.Range(1, img.Width - 1).First(x =>
                 !img.IsColumnBlack(x, innerTop, innerBottom));
             // the first black column behind the item text
-            var innerRight = Helper.Range(img.Width - 2, 0, -1).First(x =>
+            var innerRight = Helper.Range(img.Width - 2 - xLeft, 0, -1).First(x =>
                 !img.IsColumnBlack(x, innerTop, innerBottom)) + 1;
 
             var nameFrame = new Rectangle(left + innerLeft, top + innerTop,
