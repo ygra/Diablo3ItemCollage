@@ -60,8 +60,8 @@ namespace ItemCollage
                 return new Rectangle();
 
             return new Rectangle(extentLeft, extentUp,
-                                 extentRight - extentLeft,
-                                 extentDown - extentUp);
+                                 extentRight - extentLeft + 1,
+                                 extentDown - extentUp + 1);
         }
 
         private Point FindOuter(Bitmap bmp, int x, int y, int step = 1, int searchWidth = 20)
