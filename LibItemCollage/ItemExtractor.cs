@@ -166,7 +166,7 @@ namespace ItemCollage
             // for the right border, we can't check from top to bottom because
             // linked items have a non-black [X] at the top right, so we only
             // check the bottom half
-            var right = Helper.Range(bmp.Width - 1, 0, -1).First(x =>
+            var right = Helper.Range(bmp.Width - 2, 0, -1).First(x =>
                 !bmp.IsColumnBlack(x, bmp.Height/2)) + 1;
 
             // to separate the title from the actual item, simplify move down
@@ -183,9 +183,9 @@ namespace ItemCollage
 
             // remove any left-over semi-black border columns
             left = Helper.Range(left, bmp.Width - 1).First(x =>
-                bmp.IsColumnNonBlack(x, top, bottom - 1));
+                bmp.IsColumnNonBlack(x, top + 1, bottom - 1));
             right = Helper.Range(right, 0, -1).First(x =>
-                bmp.IsColumnNonBlack(x, top, bottom - 1)) + 1;
+                bmp.IsColumnNonBlack(x, top + 1, bottom - 1)) + 1;
 
             if (!removeFrame)
             {
