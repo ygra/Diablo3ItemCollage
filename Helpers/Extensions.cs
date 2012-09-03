@@ -124,5 +124,14 @@ namespace ItemCollage
         {
             return Helper.Range(xstart, xend).All(x => !b.IsBlackAt(x, y));
         }
+
+        /* string */
+        public static int ToInt(this string s)
+        {
+            int x;
+            if (int.TryParse(s, out x)) return x;
+
+            return 0;
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ItemCollage;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -55,7 +56,9 @@ namespace Test
 
     class Program
     {
-        static Regex cursorPattern = new Regex(@"P(\d+)-(\d+)");
+        static Regex cursorPattern = new Regex(@"P(?<x>\d+)-(?<y>\d+)");
+        static Regex itemPattern = new Regex(
+            @"R(?<x>\d+)-(?<y>\d+)-(?<width>\d+)-(?<height>\d+)");
         static string folderPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
             "ExtractTest");
@@ -106,8 +109,8 @@ namespace Test
 
             Console.ResetColor();
             var output = new ConsoleOutputList();
-            output.Add(string.Format("Test {0}/{1}... ", test, numTests));
-            Interlocked.Increment(ref test);
+            output.Add(string.Format("Test {0}/{1}... ",
+                Interlocked.Increment(ref test), numTests));
 
             string reason = CompareItemExtraction(infile, outfile, titlefile, output);
             if (reason == "")
@@ -194,7 +197,7 @@ namespace Test
         }
 
         private static string CompareItemExtraction(string infile, string outfile,
-            string titlefile, ConsoleOutputList output)
+            string titlefile, ConsoleOutputList output, bool imageCompare = false)
         {
             var match = cursorPattern.Match(infile);
             if (!match.Success)
@@ -203,17 +206,26 @@ namespace Test
             }
 
             var bmp = new Bitmap(infile);
-            var cursorPos = new Point(
-                Convert.ToInt32(match.Groups[1].Captures[0].Value),
-                Convert.ToInt32(match.Groups[2].Captures[0].Value));
+            var cursorPos = new Point(match.Groups["x"].Value.ToInt(),
+                                      match.Groups["y"].Value.ToInt());
 
             var sw = new Stopwatch();
-            var ie = new ItemCollage.ItemExtractor(bmp, cursorPos);
+            var ie = new ItemExtractor(bmp, cursorPos);
             Bitmap item = null;
+            var success = false;
+
             sw.Start();
             try
             {
-                item = (Bitmap)ie.ExtractItem();
+                if (imageCompare)
+                {
+                    item = (Bitmap)ie.ExtractItem();
+                    success = (item != null);
+                }
+                else
+                {
+                    success = ie.FindItem();
+                }
             }
             catch { }
             sw.Stop();
@@ -223,15 +235,56 @@ namespace Test
             output.Add("(");
             output.AddTime(itemTime);
 
-            var result = CompareImageResult(item, outfile, "item");
+            var result = "";
+            if (imageCompare)
+            {
+                result = CompareImageResult(item, outfile, "item");
+            }
+            else
+            {
+                var itemMatch = itemPattern.Match(infile);
+                if (!itemMatch.Success)
+                {
+                    if (success) result = "Unexpectedly found item";
+                }
+                else
+                {
+                    if (success)
+                    {
+                        var expected = new Rectangle(
+                            itemMatch.Groups["x"].Value.ToInt(),
+                            itemMatch.Groups["y"].Value.ToInt(),
+                            itemMatch.Groups["width"].Value.ToInt(),
+                            itemMatch.Groups["height"].Value.ToInt());
+                        var found = ie.ItemFrame;
+
+                        if (found != expected) result = string.Format(
+                             "Found item at {0}, expected {1}", found, expected);
+                    }
+                    else
+                    {
+                        result = "No item found";
+                    }
+                }
+            }
+
             if (result == "")
             {
                 Bitmap title = null;
-                if (item != null)
+                if (success)
                 {
                     var titleWatch = new Stopwatch();
                     titleWatch.Start();
-                    title = ItemCollage.ItemExtractor.ExtractItemName(item, true);
+
+                    if (imageCompare)
+                    {
+                        title = ItemExtractor.ExtractItemName(item, true);
+                    }
+                    else
+                    {
+                        title = ie.ExtractItemName(true);
+                    }
+
                     titleWatch.Stop();
 
                     var titleTime = titleWatch.Elapsed.TotalSeconds;

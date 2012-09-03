@@ -87,6 +87,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Helpers\Helpers.csproj">
+      <Project>{D2432527-F9FD-46CC-B895-B51806AE57EF}</Project>
+      <Name>Helpers</Name>
+    </ProjectReference>
     <ProjectReference Include="..\LibItemCollage\LibItemCollage.csproj">
       <Project>{6D6EDA58-E08D-41D1-A51A-14F048AFFB41}</Project>
       <Name>LibItemCollage</Name>

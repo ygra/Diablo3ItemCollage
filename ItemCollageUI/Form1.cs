@@ -99,8 +99,16 @@ namespace ItemCollage
             if (saveScreenshot)
             {
                 // save picture for future testing
-                var baseName = string.Format("itemat-{0:yyyy-MM-dd-HH-mm-ss}-P{1}-{2}",
-                    DateTime.UtcNow, cursorPos.X, cursorPos.Y);
+                string baseName;
+                if (item == null)
+                    baseName = string.Format("itemat-{0:yyyy-MM-dd-HH-mm-ss}-P{1}-{2}",
+                        DateTime.UtcNow, cursorPos.X, cursorPos.Y);
+                else
+                    baseName = string.Format(
+                        "itemat-{0:yyyy-MM-dd-HH-mm-ss}-P{1}-{2}-R{3}-{4}-{5}-{6}",
+                        DateTime.UtcNow, cursorPos.X, cursorPos.Y, ie.ItemFrame.X,
+                        ie.ItemFrame.Y, ie.ItemFrame.Width, ie.ItemFrame.Height);
+
                 var picFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
                 var testFolder = Path.Combine(picFolder, "ExtractTest");
                 if (!Directory.Exists(testFolder)) Directory.CreateDirectory(testFolder);
