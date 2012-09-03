@@ -212,31 +212,10 @@ namespace ItemCollage
         {
             if (items.Count == 0) return;
 
-            int numCols = (int)Math.Min(Math.Ceiling(Math.Sqrt(items.Count)), 4);
-            int w = items[0].Width;
-            var colLengths = new int[numCols];
+            var columns = (int)Math.Min(Math.Ceiling(Math.Sqrt(items.Count)), 4);
+            var collage = new Collage(items, columns);
 
-            foreach (var item in items)
-            {
-                var col = Helper.Range(0, numCols - 1).MinBy(i => colLengths[i]);
-                colLengths[col] += item.Height;
-            }
-
-            Bitmap b = new Bitmap(numCols * w, colLengths.Max(), PixelFormat.Format16bppRgb555);
-            Graphics g = Graphics.FromImage(b);
-            colLengths = new int[numCols];
-
-            int itemIndex = 1;
-
-            foreach (var item in items)
-            {
-                var col = Helper.Range(0, numCols - 1).MinBy(i => colLengths[i]);
-                g.DrawImageUnscaledAndClipped(item, new Rectangle(w * col, colLengths[col], w, item.Height));
-                if (items.Count > 1) // don't draw numbers for just a single item
-                    g.DrawString(itemIndex.ToString(), new Font("Arial", 20, FontStyle.Bold), Brushes.White, col * w + 10, colLengths[col] + 10);
-                colLengths[col] += item.Height;
-                itemIndex++;
-            }
+            Bitmap b = collage.CreateCollage();
 
             var picFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
             var fileName = string.Format("items-{0:yyyyMMdd-HHmmss}.png", DateTime.Now);
