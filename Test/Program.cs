@@ -140,7 +140,10 @@ namespace Test
 
             if (verbose)
             {
-                PrintOutput(output);
+                lock (lockobj)
+                {
+                    output.Print();
+                }
             }
             else
             {
@@ -149,14 +152,6 @@ namespace Test
                     Console.CursorLeft = 0;
                     Console.Write("{0} - {1}", success, fail);
                 }
-            }
-        }
-
-        private static void PrintOutput(ConsoleOutputList outlist)
-        {
-            lock (lockobj)
-            {
-                outlist.Print();
             }
         }
 
