@@ -25,7 +25,7 @@ namespace ItemCollage
             var extentUp = p.Y;
             var extentDown = p.Y;
             var skip = 0;
-            const int MAX_SKIP = 3;
+            const int MAX_SKIP = 2;
 
             if (!bmp.IsBlackAt(p.X, p.Y)) return new Rectangle();
 
@@ -34,14 +34,14 @@ namespace ItemCollage
                 extentUp = p.Y -
                     Helper.Range(0, p.Y)
                         .TakeWhile(y => bmp.IsBlackAt(p.X, p.Y - y) ||
-                            ++skip < MAX_SKIP)
+                            skip++ < MAX_SKIP)
                         .Last(y => bmp.IsBlackAt(p.X, p.Y - y));
 
                 skip = 0;
                 extentDown =
                     Helper.Range(p.Y, bmp.Height)
                         .TakeWhile(y => bmp.IsBlackAt(p.X, y) ||
-                            ++skip < MAX_SKIP)
+                            skip++ < MAX_SKIP)
                         .Last(y => bmp.IsBlackAt(p.X, y));
             }
 
@@ -58,7 +58,7 @@ namespace ItemCollage
             skip = 0;
             if (twoDim && !Helper.Range(extentUp, extentDown).All(
                     y => bmp.IsBlackAt(extentLeft, y) ||
-                         ++skip < MAX_SKIP))
+                         skip++ < MAX_SKIP))
                 return new Rectangle();
 
             return new Rectangle(extentLeft, extentUp,
