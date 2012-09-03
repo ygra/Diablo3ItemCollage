@@ -12,6 +12,8 @@ namespace ItemCollage
         private Bitmap bmp;
         private Point cursorPos;
 
+        public Rectangle ItemFrame { get; private set; }
+
         public ItemExtractor(Bitmap bitmap, Point cursorPos)
         {
             this.bmp = bitmap;
@@ -105,7 +107,7 @@ namespace ItemCollage
             return black;
         }
 
-        public Image ExtractItem()
+        public bool FindItem()
         {
             int minWidth = 150, minHeight = 90;
 
@@ -146,16 +148,34 @@ namespace ItemCollage
                 .FirstOrDefault();
 
             if (itemFrame.Width < minWidth || itemFrame.Height < minHeight)
+            {
+                this.ItemFrame = new Rectangle();
+                return false;
+            }
+
+            this.ItemFrame = itemFrame;
+            return true;
+        }
+
+        public Image ExtractItem()
+        {
+            if (ItemFrame == new Rectangle() && !this.FindItem())
                 return null;
 
-            Bitmap item = new Bitmap(itemFrame.Width, itemFrame.Height,
+            Bitmap item = new Bitmap(ItemFrame.Width, ItemFrame.Height,
                 PixelFormat.Format24bppRgb);
-            Graphics g = Graphics.FromImage(item);
-            var targetFrame = new Rectangle(0, 0, itemFrame.Width, itemFrame.Height);
-            g.DrawImage(bmp, targetFrame, itemFrame, GraphicsUnit.Pixel);
-            g.Dispose();
+            using (Graphics g = Graphics.FromImage(item))
+            {
+                var targetFrame = new Rectangle(0, 0, ItemFrame.Width, ItemFrame.Height);
+                g.DrawImage(bmp, targetFrame, ItemFrame, GraphicsUnit.Pixel);
+            }
 
             return item;
+        }
+
+        public Bitmap ExtractItemName(bool removeFrame)
+        {
+            return ItemExtractor.ExtractItemName((Bitmap)this.ExtractItem(), removeFrame);
         }
 
         public static Bitmap ExtractItemName(Bitmap bmp, bool removeFrame)
@@ -167,7 +187,7 @@ namespace ItemCollage
             // linked items have a non-black [X] at the top right, so we only
             // check the bottom half
             var right = Helper.Range(bmp.Width - 2, 0, -1).First(x =>
-                !bmp.IsColumnBlack(x, bmp.Height/2)) + 1;
+                !bmp.IsColumnBlack(x, bmp.Height / 2)) + 1;
 
             // to separate the title from the actual item, simplify move down
             // from the first non-black row until everything is black again.
