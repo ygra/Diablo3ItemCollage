@@ -68,7 +68,10 @@ namespace Test
 
         static int test = 1;
         static int success = 0;
+        static int fail = 0;
         static int numTests = 0;
+
+        static bool verbose = true;
 
         static object lockobj = new object();
 
@@ -77,8 +80,12 @@ namespace Test
             if (!Directory.Exists(folderPath))
             {
                 Debug.Fail("Test directory does not exist");
+                Environment.ExitCode = 3;
                 return;
             }
+
+            if (args.Contains("-q") || args.Contains("--quiet"))
+                verbose = false;
 
             var folder = new DirectoryInfo(folderPath);
             var files = folder.GetFiles("*.in.png");
@@ -89,16 +96,22 @@ namespace Test
             Parallel.ForEach(files, TestFile);
             sw.Stop();
 
-            Console.ResetColor();
-            Console.WriteLine("{0} of {1} tests succeeded.", success, numTests);
-            Console.WriteLine("Time taken: {0} total", sw.Elapsed);
-            Console.WriteLine("Extraction: {0:F3}s - Titles: {1:F3}s", extractTimes.Sum(),
-                extractTitleTimes.Sum());
-            Console.WriteLine("Slow extractions: {0} / {1} - {2} / {3}",
-                extractTimes.Where(t => t > 0.1 && t <= 0.2).Count(),
-                extractTimes.Where(t => t > 0.2).Count(),
-                extractTitleTimes.Where(t => t > 0.1 && t <= 0.2).Count(),
-                extractTitleTimes.Where(t => t > 0.2).Count());
+            Console.WriteLine();
+            if (verbose)
+            {
+                Console.ResetColor();
+                Console.WriteLine("{0} of {1} tests succeeded.", success, numTests);
+                Console.WriteLine("Time taken: {0} total", sw.Elapsed);
+                Console.WriteLine("Extraction: {0:F3}s - Titles: {1:F3}s", extractTimes.Sum(),
+                    extractTitleTimes.Sum());
+                Console.WriteLine("Slow extractions: {0} / {1} - {2} / {3}",
+                    extractTimes.Where(t => t > 0.1 && t <= 0.2).Count(),
+                    extractTimes.Where(t => t > 0.2).Count(),
+                    extractTitleTimes.Where(t => t > 0.1 && t <= 0.2).Count(),
+                    extractTitleTimes.Where(t => t > 0.2).Count());
+            }
+
+            if (fail > 0) Environment.ExitCode = 1;
         }
 
         private static void TestFile(FileInfo input)
@@ -122,9 +135,21 @@ namespace Test
             {
                 output.Add(string.Format("failed ({0})\n{1}", reason, input.Name),
                     ConsoleColor.Red);
+                Interlocked.Increment(ref fail);
             }
 
-            PrintOutput(output);
+            if (verbose)
+            {
+                PrintOutput(output);
+            }
+            else
+            {
+                lock (lockobj)
+                {
+                    Console.CursorLeft = 0;
+                    Console.Write("{0} - {1}", success, fail);
+                }
+            }
         }
 
         private static void PrintOutput(ConsoleOutputList outlist)

@@ -37,15 +37,21 @@ version="${tag#v*}"
 # use revision as build number
 version="${version//-/.}"
 
+echo "Compiling..."
+cmd "/c C:\\Windows\\Microsoft.Net\\Framework\\v4.0.30319\\MSBuild.exe \
+            /nologo /p:Configuration=Release /verbosity:q"
+
+echo "Running tests..."
+if ! Test/bin/Release/Test.exe -q; then
+  echo "Tests failed!"
+  exit 1
+fi
+
 echo "Bumping version..."
 # echo \r\n so git doesn't complain about line endings
 echo -ne "$version\r\n" > ./version
 sed -bri "s/^(\[assembly:\s+AssemblyVersion)\(\"[^\"]+\"\)/\1(\"$version.0\")/" \
        ItemCollageUI/Properties/AssemblyInfo.cs
-
-echo "Compiling..."
-cmd "/c C:\\Windows\\Microsoft.Net\\Framework\\v4.0.30319\\MSBuild.exe \
-            /nologo /p:Configuration=Release /verbosity:q"
 
 file="ItemCollage-$tag.exe"
 path="ItemCollageUI/bin/Release/$file"
