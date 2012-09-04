@@ -88,13 +88,15 @@ namespace ItemCollage
             if (item == null)
             {
                 label1.Text = "No item found";
-                return;
             }
-
-            Clipboard.SetImage(item);
-            items.Add(item);
-            itemListBox1.SelectedIndex = itemListBox1.Items.Count - 1;
-            Debug.Print("{0} items in ListBox", itemListBox1.Items.Count);
+            else
+            {
+                Clipboard.SetImage(item);
+                items.Add(item);
+                itemListBox1.SelectedIndex = itemListBox1.Items.Count - 1;
+                Debug.Print("{0} items in ListBox", itemListBox1.Items.Count);
+                UpdateLabel();
+            }
 
             if (saveScreenshot)
             {
@@ -116,16 +118,18 @@ namespace ItemCollage
                 var file = Path.Combine(testFolder, baseName + ".in.png");
                 screen.Save(file);
 
-                var outfile = Path.Combine(testFolder, baseName + ".out.png");
-                item.Save(outfile);
+                if (item != null)
+                {
+                    var outfile = Path.Combine(testFolder, baseName + ".out.png");
+                    item.Save(outfile);
 
-                var titlefile = Path.Combine(testFolder, baseName + ".title.png");
-                // TODO: use the list's cache
-                var title = ItemExtractor.ExtractItemName((Bitmap)item, true);
-                title.Save(titlefile);
+                    var titlefile = Path.Combine(testFolder, baseName + ".title.png");
+                    // TODO: use the list's cache
+                    var title = ItemExtractor.ExtractItemName((Bitmap)item, true);
+                    title.Save(titlefile);
+                }
             }
 
-            UpdateLabel();
         }
 
         private void UpdateLabel()
