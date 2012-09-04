@@ -109,21 +109,43 @@ namespace ItemCollage
             IEnumerable<int> vertical, int size = 5)
         {
             var black = new List<Point>();
-            foreach (var y in vertical)
+            var w = bmp.Width;
+            var h = bmp.Height;
+
+            unsafe
             {
-                foreach (var x in horizontal)
+                var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+                var bmpData = bmp.LockBits(rect, ImageLockMode.ReadOnly,
+                    bmp.PixelFormat);
+                try
                 {
-                    if (Helper.Range(-size, size).All(dx =>
-                        Helper.Range(-size, size).All(dy => bmp.IsBlackAt(x + dx, y + dy))))
+                    var bytes = bmp.BytesPerPixel();
+                    foreach (var y in vertical)
                     {
-                        black.Add(new Point(x, y));
-                        // since we move outwards from the cursor, we can safely
-                        // break here without risking not to hit the actual item
-                        // frame
-                        break;
+                        foreach (var x in horizontal)
+                        {
+                            if (Helper.Range(-size, size).All(dx =>
+                                Helper.Range(-size, size).All(dy =>
+                                    x + dx < w && x + dx >= 0 &&
+                                    y + dy < h && y + dy >= 0 &&
+                                    bmpData.Row(y + dy).IsBlackAt(x + dx, bytes)
+                                )))
+                            {
+                                black.Add(new Point(x, y));
+                                // since we move outwards from the cursor, we can safely
+                                // break here without risking not to hit the actual item
+                                // frame
+                                break;
+                            }
+                        }
                     }
                 }
+                finally
+                {
+                    bmp.UnlockBits(bmpData);
+                }
             }
+
             return black;
         }
 
