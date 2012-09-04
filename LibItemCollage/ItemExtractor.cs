@@ -315,14 +315,14 @@ namespace ItemCollage
             var h = nameFrame.Height;
             var w = nameFrame.Width;
             var name = new Bitmap(w, h, PixelFormat.Format24bppRgb);
-            for (var x = 0; x < name.Width; x++)
+            for (var x = 0; x < w; x++)
             {
                 // position in the item title frame that corresponds to x
                 var innerX = x + innerLeft;
                 // corresponding position in the full item frame
                 var outerX = innerX + left;
 
-                for (var y = 0; y < name.Height; y++)
+                for (var y = 0; y < h; y++)
                 {
                     var innerY = y + innerTop;
                     var outerY = innerY + top;
