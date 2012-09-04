@@ -66,7 +66,7 @@ namespace Test
         static ConcurrentBag<double> extractTimes = new ConcurrentBag<double>();
         static ConcurrentBag<double> extractTitleTimes = new ConcurrentBag<double>();
 
-        static int test = 1;
+        static int test = 0;
         static int success = 0;
         static int fail = 0;
         static int numTests = 0;
