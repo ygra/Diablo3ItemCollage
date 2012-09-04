@@ -20,50 +20,50 @@ namespace ItemCollage
             this.cursorPos = cursorPos;
         }
 
-        private Rectangle FindFrame(Bitmap bmp, Point p, bool twoDim = true)
+        private Rectangle FindBorder(Bitmap bmp, Point p)
         {
-            var extentUp = p.Y;
-            var extentDown = p.Y;
+            if (!bmp.IsBlackAt(p.X, p.Y)) return new Rectangle();
+
+            var left = Helper.Range(p.X, 0, -1)
+                    .TakeWhile(x => bmp.IsBlackAt(x, p.Y))
+                    .Last();
+
+            var right = Helper.Range(p.X, bmp.Width - 1)
+                    .TakeWhile(x => bmp.IsBlackAt(x, p.Y))
+                    .Last();
+
+            return new Rectangle(left, p.Y, right - left + 1, 0);
+        }
+
+        private Rectangle SelectFrame(Bitmap bmp, Point p)
+        {
             var skip = 0;
             const int MAX_SKIP = 2;
 
             if (!bmp.IsBlackAt(p.X, p.Y)) return new Rectangle();
 
-            if (twoDim)
-            {
-                extentUp = p.Y -
-                    Helper.Range(0, p.Y)
-                        .TakeWhile(y => bmp.IsBlackAt(p.X, p.Y - y) ||
-                            skip++ < MAX_SKIP)
-                        .Last(y => bmp.IsBlackAt(p.X, p.Y - y));
-
-                skip = 0;
-                extentDown =
-                    Helper.Range(p.Y, bmp.Height)
-                        .TakeWhile(y => bmp.IsBlackAt(p.X, y) ||
-                            skip++ < MAX_SKIP)
-                        .Last(y => bmp.IsBlackAt(p.X, y));
-            }
-
-            var extentLeft = p.X -
-                Helper.Range(0, p.X)
-                    .TakeWhile(x => bmp.IsBlackAt(p.X - x, extentDown))
-                    .Last();
-
-            var extentRight =
-                Helper.Range(p.X, bmp.Width)
-                    .TakeWhile(x => bmp.IsBlackAt(x, extentDown))
-                    .Last();
+            var top = Helper.Range(p.Y, 0, -1)
+                    .TakeWhile(y => bmp.IsBlackAt(p.X, y) ||
+                        skip++ < MAX_SKIP)
+                    .Last(y => bmp.IsBlackAt(p.X, y));
 
             skip = 0;
-            if (twoDim && !Helper.Range(extentUp, extentDown).All(
-                    y => bmp.IsBlackAt(extentLeft, y) ||
-                         skip++ < MAX_SKIP))
+            var bottom = Helper.Range(p.Y, bmp.Height - 1)
+                    .TakeWhile(y => bmp.IsBlackAt(p.X, y) ||
+                        skip++ < MAX_SKIP)
+                    .Last(y => bmp.IsBlackAt(p.X, y));
+
+            var border = FindBorder(bmp, new Point(p.X, bottom));
+            var left = border.Left;
+            var right = border.Right;
+
+            // verify the left border is indeed black
+            skip = 0;
+            if (!Helper.Range(top, bottom).All(y => bmp.IsBlackAt(left, y) ||
+                    skip++ < MAX_SKIP))
                 return new Rectangle();
 
-            return new Rectangle(extentLeft, extentUp,
-                                 extentRight - extentLeft + 1,
-                                 extentDown - extentUp + 1);
+            return new Rectangle(left, top, border.Width, bottom - top + 1);
         }
 
         private Point FindOuter(Bitmap bmp, int x, int y, int step = 1, int searchWidth = 20)
@@ -124,7 +124,7 @@ namespace ItemCollage
             black.AddRange(FindBlackSquares(bmp, right, vertical));
 
             // find all left and right border points
-            var frames = black.Select(p => FindFrame(bmp, p, false))
+            var frames = black.Select(p => FindBorder(bmp, p))
                 .Where(f => f.Width >= minWidth);
             var leftBorders = frames.Distinct(f => f.Left);
             var rightBorders = frames.Distinct(f => f.Right);
@@ -134,7 +134,7 @@ namespace ItemCollage
                 .Concat(leftBorders.Select(f => FindOuter(bmp, f.Left, f.Bottom, -1)));
 
             var outerFrames = outerPoints.Distinct()
-                .Select(p => FindFrame(bmp, p, true))
+                .Select(p => SelectFrame(bmp, p))
                 .Where(f => f.Width >= minWidth && f.Height >= minHeight);
 
             // the frame closest to the cursor position is (hopefully) the
