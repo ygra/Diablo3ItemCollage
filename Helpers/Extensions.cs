@@ -136,7 +136,19 @@ namespace ItemCollage
         public static bool IsColumnNonBlack(this Bitmap b, int x, int ystart,
             int yend)
         {
-            return Helper.Range(ystart, yend).All(y => !b.IsBlackAt(x, y));
+            var rect = new Rectangle(x, 0, 1, b.Height);
+            var data = b.LockBits(rect, ImageLockMode.ReadOnly, b.PixelFormat);
+            var bytes = b.BytesPerPixel();
+
+            try
+            {
+                return Helper.Range(ystart, yend).All(y =>
+                    !data.Row(y).IsBlackAt(0, bytes));
+            }
+            finally
+            {
+                b.UnlockBits(data);
+            }
         }
 
         public static bool IsRowNonBlack(this Bitmap b, int y)
@@ -152,7 +164,19 @@ namespace ItemCollage
         public static bool IsRowNonBlack(this Bitmap b, int y, int xstart,
             int xend)
         {
-            return Helper.Range(xstart, xend).All(x => !b.IsBlackAt(x, y));
+            var rect = new Rectangle(0, y, b.Width, 1);
+            var data = b.LockBits(rect, ImageLockMode.ReadOnly, b.PixelFormat);
+            var bytes = b.BytesPerPixel();
+
+            try
+            {
+                var row = data.Scan0;
+                return Helper.Range(xstart, xend).All(x => !row.IsBlackAt(x, bytes));
+            }
+            finally
+            {
+                b.UnlockBits(data);
+            }
         }
 
         /* string */
