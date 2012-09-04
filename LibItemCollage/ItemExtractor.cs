@@ -32,7 +32,7 @@ namespace ItemCollage
                 var rect = new Rectangle(0, p.Y, bmp.Width, 1);
                 var bmpData = bmp.LockBits(rect, ImageLockMode.ReadOnly,
                     bmp.PixelFormat);
-                var bytes = Image.GetPixelFormatSize(bmp.PixelFormat) / 8;
+                var bytes = bmp.BytesPerPixel();
 
                 try
                 {

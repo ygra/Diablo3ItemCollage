@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace ItemCollage
 {
@@ -52,6 +53,11 @@ namespace ItemCollage
         }
 
         /* Bitmap */
+        public static int BytesPerPixel(this Bitmap b)
+        {
+            return Image.GetPixelFormatSize(b.PixelFormat) / 8;
+        }
+
         public static bool IsBlackAt(this Bitmap b, int x, int y)
         {
             if (x < 0 || y < 0 || x >= b.Width || y >= b.Height)
