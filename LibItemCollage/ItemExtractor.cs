@@ -55,21 +55,35 @@ namespace ItemCollage
 
         private Rectangle SelectFrame(Bitmap bmp, Point p)
         {
-            var skip = 0;
-            const int MAX_SKIP = 2;
-
             if (!bmp.IsBlackAt(p.X, p.Y)) return new Rectangle();
 
-            var top = Helper.Range(p.Y, 0, -1)
-                    .TakeWhile(y => bmp.IsBlackAt(p.X, y) ||
-                        skip++ < MAX_SKIP)
-                    .Last(y => bmp.IsBlackAt(p.X, y));
+            var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+            var data = bmp.LockBits(rect, ImageLockMode.ReadOnly,
+                bmp.PixelFormat);
+            var bytes = bmp.BytesPerPixel();
 
-            skip = 0;
-            var bottom = Helper.Range(p.Y, bmp.Height - 1)
-                    .TakeWhile(y => bmp.IsBlackAt(p.X, y) ||
-                        skip++ < MAX_SKIP)
-                    .Last(y => bmp.IsBlackAt(p.X, y));
+            const int MAX_SKIP = 2;
+            var skip = 0;
+
+            var top = 0;
+            var bottom = 0;
+            try
+            {
+                top = Helper.Range(p.Y, 0, -1)
+                        .TakeWhile(y => data.Row(y).IsBlackAt(p.X, bytes) ||
+                            skip++ < MAX_SKIP)
+                        .Last(y => data.Row(y).IsBlackAt(p.X, bytes));
+
+                skip = 0;
+                bottom = Helper.Range(p.Y, bmp.Height - 1)
+                        .TakeWhile(y => data.Row(y).IsBlackAt(p.X, bytes) ||
+                            skip++ < MAX_SKIP)
+                        .Last(y => data.Row(y).IsBlackAt(p.X, bytes));
+            }
+            finally
+            {
+                bmp.UnlockBits(data);
+            }
 
             var border = FindBorder(bmp, new Point(p.X, bottom));
             var left = border.Left;
