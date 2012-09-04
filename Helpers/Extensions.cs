@@ -133,5 +133,12 @@ namespace ItemCollage
 
             return 0;
         }
+
+        /* byte[] */
+        public static bool IsBlackAt(this byte[] b, int x, int bytes)
+        {
+            return Enumerable.Range(0, bytes).All(dx =>
+                b[bytes * x + dx] == 0);
+        }
     }
 }

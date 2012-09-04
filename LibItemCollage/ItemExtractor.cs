@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 
 namespace ItemCollage
 {
@@ -24,13 +25,33 @@ namespace ItemCollage
         {
             if (!bmp.IsBlackAt(p.X, p.Y)) return new Rectangle();
 
-            var left = Helper.Range(p.X, 0, -1)
-                    .TakeWhile(x => bmp.IsBlackAt(x, p.Y))
-                    .Last();
+            var left = p.X;
+            var right = p.X;
+            unsafe
+            {
+                var rect = new Rectangle(0, p.Y, bmp.Width, 1);
+                var bmpData = bmp.LockBits(rect, ImageLockMode.ReadOnly,
+                    bmp.PixelFormat);
+                var bytes = Image.GetPixelFormatSize(bmp.PixelFormat) / 8;
 
-            var right = Helper.Range(p.X, bmp.Width - 1)
-                    .TakeWhile(x => bmp.IsBlackAt(x, p.Y))
-                    .Last();
+                try
+                {
+                    byte[] data = new byte[bmpData.Stride];
+                    Marshal.Copy(bmpData.Scan0, data, 0, bmpData.Stride);
+
+                    left = Helper.Range(p.X, 0, -1)
+                        .TakeWhile(x => data.IsBlackAt(x, bytes))
+                        .Last();
+
+                    right = Helper.Range(p.X, bmp.Width - 1)
+                        .TakeWhile(x => data.IsBlackAt(x, bytes))
+                        .Last();
+                }
+                finally
+                {
+                    bmp.UnlockBits(bmpData);
+                }
+            }
 
             return new Rectangle(left, p.Y, right - left + 1, 0);
         }
