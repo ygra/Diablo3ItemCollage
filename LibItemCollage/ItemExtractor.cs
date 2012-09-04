@@ -36,15 +36,14 @@ namespace ItemCollage
 
                 try
                 {
-                    byte[] data = new byte[bmpData.Stride];
-                    Marshal.Copy(bmpData.Scan0, data, 0, bmpData.Stride);
+                    IntPtr row = bmpData.Scan0;
 
                     left = Helper.Range(p.X, 0, -1)
-                        .TakeWhile(x => data.IsBlackAt(x, bytes))
+                        .TakeWhile(x => row.IsBlackAt(x, bytes))
                         .Last();
 
                     right = Helper.Range(p.X, bmp.Width - 1)
-                        .TakeWhile(x => data.IsBlackAt(x, bytes))
+                        .TakeWhile(x => row.IsBlackAt(x, bytes))
                         .Last();
                 }
                 finally
