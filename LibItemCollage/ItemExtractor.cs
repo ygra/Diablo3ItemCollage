@@ -323,34 +323,60 @@ namespace ItemCollage
 
             var h = nameFrame.Height;
             var w = nameFrame.Width;
-            var name = new Bitmap(w, h, PixelFormat.Format24bppRgb);
-            for (var x = 0; x < w; x++)
+            var name = new Bitmap(w, h, bmp.PixelFormat);
+            
+            unsafe
             {
-                // position in the item title frame that corresponds to x
-                var innerX = x + innerLeft;
-                // corresponding position in the full item frame
-                var outerX = innerX + left;
+                var destRect = new Rectangle(0, 0, w, h);
+                var dest = name.LockBits(destRect, ImageLockMode.ReadWrite,
+                    name.PixelFormat);
 
-                for (var y = 0; y < h; y++)
+                var srcRect = new Rectangle(innerLeft + left, innerTop + top, w, h);
+                var src = bmp.LockBits(srcRect, ImageLockMode.ReadOnly,
+                    bmp.PixelFormat);
+
+                var mapRect = new Rectangle(innerLeft, innerTop, w, h);
+                var map = img.LockBits(mapRect, ImageLockMode.ReadOnly,
+                    img.PixelFormat);
+
+                var bytes = name.BytesPerPixel();
+
+                try
                 {
-                    var innerY = y + innerTop;
-                    var outerY = innerY + top;
-
-                    if (!img.IsBlackAt(innerX, innerY))
+                    for (var x = 0; x < w; x++)
                     {
-                        // copy the matching and all neighboring pixels to get
-                        // some kind of font anti-aliasing
-                        var points = from dx in Helper.Range(-1, 1)
-                                     from dy in Helper.Range(-1, 1)
-                                     let fy = y + dy
-                                     let fx = x + dx
-                                     where fy >= 0 && fy < h && fx >= 0 && fx < w
-                                     select new { dx, dy };
+                        for (var y = 0; y < h; y++)
+                        {
+                            if (map.Row(y).IsBlackAt(x, bytes))
+                                    continue;
 
-                        foreach (var d in points)
-                            name.SetPixel(x + d.dx, y + d.dy,
-                                bmp.GetPixel(outerX + d.dx, outerY + d.dy));
+                            // copy the matching and all neighboring pixels to get
+                            // some kind of font anti-aliasing
+                            var points = from dx in Helper.Range(-1, 1)
+                                         from dy in Helper.Range(-1, 1)
+                                         let fy = y + dy
+                                         let fx = x + dx
+                                         where fy >= 0 && fy < h && fx >= 0 && fx < w
+                                         select new { dx, dy };
+
+                            foreach (var d in points)
+                            {
+                                var dx = x + d.dx;
+                                var dy = y + d.dy;
+                                var source = (byte*)src.Row(dy) + bytes * dx;
+                                var target = (byte*)dest.Row(dy) + bytes * dx;
+                                for (var bit = 0; bit < bytes; bit++)
+                                    target[bit] = source[bit];
+
+                            }
+                        }
                     }
+                }
+                finally
+                {
+                    name.UnlockBits(dest);
+                    bmp.UnlockBits(src);
+                    img.UnlockBits(map);
                 }
             }
 
