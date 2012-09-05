@@ -23,19 +23,17 @@ namespace ItemCollage
 
         private Rectangle FindBorder(Bitmap bmp, Point p)
         {
-            if (!bmp.IsBlackAt(p.X, p.Y)) return new Rectangle();
-
-            var left = p.X;
-            var right = p.X;
-
             var rect = new Rectangle(0, p.Y, bmp.Width, 1);
             var bmpData = bmp.LockBits(rect, ImageLockMode.ReadOnly,
                 bmp.PixelFormat);
             var bytes = bmp.BytesPerPixel();
 
+            int left, right;
             try
             {
                 IntPtr row = bmpData.Scan0;
+                
+                if (!row.IsBlackAt(p.X, bytes)) return new Rectangle();
 
                 left = Helper.Range(p.X, 0, -1)
                     .TakeWhile(x => row.IsBlackAt(x, bytes))
