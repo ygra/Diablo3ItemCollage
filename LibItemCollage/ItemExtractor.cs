@@ -257,21 +257,27 @@ namespace ItemCollage
             right = Helper.Range(right, 0, -1).First(x =>
                 bmp.IsColumnNonBlack(x, top + 1, bottom - 1)) + 1;
 
+            // "outer" refers to the title frame, "inner" to the title itself
+            var outerWidth = right - left;
+            var outerHeight = bottom - top;
+
             if (!removeFrame)
             {
-                var targetFrame = new Rectangle(left, top, right - left, bottom - top);
+                // just copy the item frame to a new bitmap and return that
+                var targetFrame = new Rectangle(left, top, outerWidth, outerHeight);
 
-                var title = new Bitmap(targetFrame.Width, targetFrame.Height,
+                var title = new Bitmap(outerWidth, outerHeight,
                     PixelFormat.Format24bppRgb);
                 using (Graphics g = Graphics.FromImage(title))
                 {
-                    g.DrawImage(bmp, new Rectangle(0, 0, title.Width, title.Height),
+                    g.DrawImage(bmp, new Rectangle(0, 0, outerWidth, outerHeight),
                         targetFrame, GraphicsUnit.Pixel);
                 }
 
                 return title;
             }
 
+            // we have to extract the actual title from the title frame, so
             // transform the image and remove 26% of the brightness to get
             // rid of the outer frame and the background color gradient
             ColorMatrix grayscale = new ColorMatrix(new float[][]
@@ -285,12 +291,12 @@ namespace ItemCollage
 
             var attribs = new ImageAttributes();
             attribs.SetColorMatrix(grayscale);
-            Bitmap img = new Bitmap(right - left, bottom - top,
+            Bitmap img = new Bitmap(outerWidth, outerHeight,
                 PixelFormat.Format24bppRgb);
             using (Graphics g = Graphics.FromImage(img))
             {
-                var target = new Rectangle(0, 0, img.Width, img.Height);
-                g.DrawImage(bmp, target, left, top, img.Width, img.Height,
+                var target = new Rectangle(0, 0, outerWidth, outerHeight);
+                g.DrawImage(bmp, target, left, top, outerWidth, outerHeight,
                     GraphicsUnit.Pixel, attribs);
             }
 
@@ -298,22 +304,22 @@ namespace ItemCollage
             // black pixel in there, and again don't check the full width
             // because of the close button for linked items
             // first row that contains the item name
-            var innerTop = Helper.Range(1, img.Height - 1).First(y =>
-                !img.IsRowBlack(y, 1, img.Width / 2));
+            var innerTop = Helper.Range(1, outerHeight - 1).First(y =>
+                !img.IsRowBlack(y, 1, outerWidth / 2));
             // again, the first row *below* the item name
-            var innerBottom = Helper.Range(img.Height - 2, innerTop + 1, -1).First(y =>
+            var innerBottom = Helper.Range(outerHeight - 2, innerTop + 1, -1).First(y =>
                 !img.IsRowBlack(y, 1)) + 1;
 
             // try to detect if the item is a linked one, so we can skip the X
-            var xLeft = Helper.Range(1, img.Width).TakeWhile(dx =>
-                !bmp.IsBlackAt(img.Width - dx, 0))
+            var xLeft = Helper.Range(1, outerWidth).TakeWhile(dx =>
+                !bmp.IsBlackAt(outerWidth - dx, 0))
                 .LastOrDefault();
 
             // first column that contains the text (again, skip 1 column)
-            var innerLeft = Helper.Range(1, img.Width - 1).First(x =>
+            var innerLeft = Helper.Range(1, outerWidth - 1).First(x =>
                 !img.IsColumnBlack(x, innerTop, innerBottom));
             // the first black column behind the item text
-            var innerRight = Helper.Range(img.Width - 2 - xLeft, 0, -1).First(x =>
+            var innerRight = Helper.Range(outerWidth - 2 - xLeft, 0, -1).First(x =>
                 !img.IsColumnBlack(x, innerTop, innerBottom)) + 1;
 
             var nameFrame = new Rectangle(left + innerLeft, top + innerTop,
