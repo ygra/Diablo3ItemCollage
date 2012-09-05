@@ -32,7 +32,7 @@ namespace ItemCollage
             try
             {
                 IntPtr row = bmpData.Scan0;
-                
+
                 if (!row.IsBlackAt(p.X, bytes)) return new Rectangle();
 
                 left = Helper.Range(p.X, 0, -1)
@@ -291,8 +291,7 @@ namespace ItemCollage
 
             var attribs = new ImageAttributes();
             attribs.SetColorMatrix(grayscale);
-            Bitmap img = new Bitmap(outerWidth, outerHeight,
-                PixelFormat.Format24bppRgb);
+            Bitmap img = new Bitmap(outerWidth, outerHeight, bmp.PixelFormat);
             using (Graphics g = Graphics.FromImage(img))
             {
                 var target = new Rectangle(0, 0, outerWidth, outerHeight);
