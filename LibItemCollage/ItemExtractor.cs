@@ -23,29 +23,19 @@ namespace ItemCollage
 
         private Rectangle FindBorder(Bitmap bmp, Point p)
         {
-            var rect = new Rectangle(0, p.Y, bmp.Width, 1);
-            var bmpData = bmp.LockBits(rect, ImageLockMode.ReadOnly,
-                bmp.PixelFormat);
-            var bytes = bmp.BytesPerPixel();
-
             int left, right;
-            try
+            var rect = new Rectangle(0, p.Y, bmp.Width, 1);
+            using (var data = new LockData(bmp, rect))
             {
-                IntPtr row = bmpData.Scan0;
-
-                if (!row.IsBlackAt(p.X, bytes)) return new Rectangle();
+                if (!data.IsBlackAt(p.X)) return new Rectangle();
 
                 left = Helper.Range(p.X, 0, -1)
-                    .TakeWhile(x => row.IsBlackAt(x, bytes))
+                    .TakeWhile(x => data.IsBlackAt(x))
                     .Last();
 
                 right = Helper.Range(p.X, bmp.Width - 1)
-                    .TakeWhile(x => row.IsBlackAt(x, bytes))
+                    .TakeWhile(x => data.IsBlackAt(x))
                     .Last();
-            }
-            finally
-            {
-                bmp.UnlockBits(bmpData);
             }
 
             return new Rectangle(left, p.Y, right - left + 1, 0);
@@ -53,34 +43,27 @@ namespace ItemCollage
 
         private Rectangle SelectFrame(Bitmap bmp, Point p)
         {
-            if (!bmp.IsBlackAt(p.X, p.Y)) return new Rectangle();
-
-            var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-            var data = bmp.LockBits(rect, ImageLockMode.ReadOnly,
-                bmp.PixelFormat);
-            var bytes = bmp.BytesPerPixel();
-
             const int MAX_SKIP = 2;
             var skip = 0;
 
             var top = 0;
             var bottom = 0;
-            try
+
+            var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+            using (var data = new LockData(bmp, rect))
             {
+                if (!data.IsBlackAt(p.X, p.Y)) return new Rectangle();
+
                 top = Helper.Range(p.Y, 0, -1)
-                        .TakeWhile(y => data.Row(y).IsBlackAt(p.X, bytes) ||
+                        .TakeWhile(y => data.IsBlackAt(p.X, y) ||
                             skip++ < MAX_SKIP)
-                        .Last(y => data.Row(y).IsBlackAt(p.X, bytes));
+                        .Last(y => data.IsBlackAt(p.X, y));
 
                 skip = 0;
                 bottom = Helper.Range(p.Y, bmp.Height - 1)
-                        .TakeWhile(y => data.Row(y).IsBlackAt(p.X, bytes) ||
+                        .TakeWhile(y => data.IsBlackAt(p.X, y) ||
                             skip++ < MAX_SKIP)
-                        .Last(y => data.Row(y).IsBlackAt(p.X, bytes));
-            }
-            finally
-            {
-                bmp.UnlockBits(data);
+                        .Last(y => data.IsBlackAt(p.X, y));
             }
 
             var border = FindBorder(bmp, new Point(p.X, bottom));
@@ -89,9 +72,12 @@ namespace ItemCollage
 
             // verify the left border is indeed black
             skip = 0;
-            if (!Helper.Range(top, bottom).All(y => bmp.IsBlackAt(left, y) ||
-                    skip++ < MAX_SKIP))
-                return new Rectangle();
+            using (var data = new LockData(bmp, new Rectangle(left, 0, 1, bmp.Height)))
+            {
+                if (!Helper.Range(top, bottom).All(y => data.IsBlackAt(0, y) ||
+                        skip++ < MAX_SKIP))
+                    return new Rectangle();
+            }
 
             return new Rectangle(left, top, border.Width, bottom - top + 1);
         }
@@ -102,28 +88,18 @@ namespace ItemCollage
             var max = delta > 0 ? bmp.Width - x : x;
             if (searchWidth > max) throw new ArgumentOutOfRangeException();
 
-            var rect = new Rectangle(0, y, bmp.Width, 1);
-            var data = bmp.LockBits(rect, ImageLockMode.ReadOnly,
-                bmp.PixelFormat);
-
             int target;
-            try
+            var rect = new Rectangle(0, y, bmp.Width, 1);
+            using (var data = new LockData(bmp, rect))
             {
-                var row = data.Scan0;
-                var bytes = bmp.BytesPerPixel();
-
                 target = Helper.Range(1, searchWidth, Math.Abs(step))
                     .Select(dx => x + delta * dx)
-                    .FirstOrDefault(dx => row.IsBlackAt(dx, bytes));
+                    .FirstOrDefault(dx => data.IsBlackAt(dx));
 
                 // if possible, move slightly to the left or right to get to the
                 // middle of the frame
-                while (row.IsBlackAt(target + delta, bytes))
+                while (data.IsBlackAt(target + delta))
                     target += delta;
-            }
-            finally
-            {
-                bmp.UnlockBits(data);
             }
 
             return new Point(target, y);
@@ -137,9 +113,7 @@ namespace ItemCollage
             var h = bmp.Height;
 
             var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-            var bmpData = bmp.LockBits(rect, ImageLockMode.ReadOnly,
-                bmp.PixelFormat);
-            try
+            using (var data = new LockData(bmp, rect))
             {
                 var bytes = bmp.BytesPerPixel();
                 foreach (var y in vertical)
@@ -150,7 +124,7 @@ namespace ItemCollage
                             Helper.Range(-size, size).All(dy =>
                                 x + dx < w && x + dx >= 0 &&
                                 y + dy < h && y + dy >= 0 &&
-                                bmpData.Row(y + dy).IsBlackAt(x + dx, bytes)
+                                data.IsBlackAt(x + dx, y + dy)
                             )))
                         {
                             black.Add(new Point(x, y));
@@ -161,10 +135,6 @@ namespace ItemCollage
                         }
                     }
                 }
-            }
-            finally
-            {
-                bmp.UnlockBits(bmpData);
             }
 
             return black;
@@ -344,27 +314,20 @@ namespace ItemCollage
 
             unsafe
             {
+
                 var destRect = new Rectangle(0, 0, w, h);
-                var dest = name.LockBits(destRect, ImageLockMode.ReadWrite,
-                    name.PixelFormat);
-
                 var srcRect = new Rectangle(innerLeft + left, innerTop + top, w, h);
-                var src = bmp.LockBits(srcRect, ImageLockMode.ReadOnly,
-                    bmp.PixelFormat);
-
                 var mapRect = new Rectangle(innerLeft, innerTop, w, h);
-                var map = img.LockBits(mapRect, ImageLockMode.ReadOnly,
-                    img.PixelFormat);
 
-                var bytes = name.BytesPerPixel();
-
-                try
+                using (var dest = new LockData(name, destRect, ImageLockMode.ReadWrite))
+                using (var src = new LockData(bmp, srcRect))
+                using (var map = new LockData(img, mapRect))
                 {
                     for (var x = 0; x < w; x++)
                     {
                         for (var y = 0; y < h; y++)
                         {
-                            if (map.Row(y).IsBlackAt(x, bytes))
+                            if (map.IsBlackAt(x, y))
                                 continue;
 
                             // copy the matching and all neighboring pixels to get
@@ -380,20 +343,10 @@ namespace ItemCollage
                             {
                                 var dx = x + d.dx;
                                 var dy = y + d.dy;
-                                var source = (byte*)src.Row(dy) + bytes * dx;
-                                var target = (byte*)dest.Row(dy) + bytes * dx;
-                                for (var b = 0; b < bytes; b++)
-                                    target[b] = source[b];
-
+                                dest[dx, dy] = src[dx, dy];
                             }
                         }
                     }
-                }
-                finally
-                {
-                    name.UnlockBits(dest);
-                    bmp.UnlockBits(src);
-                    img.UnlockBits(map);
                 }
             }
 

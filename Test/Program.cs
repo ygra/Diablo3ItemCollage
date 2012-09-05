@@ -187,29 +187,19 @@ namespace Test
             unsafe
             {
                 var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-                var resultData = bmp.LockBits(rect, ImageLockMode.ReadOnly,
-                    bmp.PixelFormat);
-                var expectedData = expected.LockBits(rect, ImageLockMode.ReadOnly,
-                    expected.PixelFormat);
+                var bytes = bmp.BytesPerPixel();
 
-                try
+                using(var expectedData = new LockData(expected, rect))
+                using(var resultData = new LockData(bmp, rect))
                 {
-                    byte* resultStart = (byte*)resultData.Scan0;
-                    byte* expectedStart = (byte*)expectedData.Scan0;
-                    for (var y = 0; y < resultData.Height; y++)
+                    for (var y = 0; y < resultData.Data.Height; y++)
                     {
-                        var resultRow = (IntPtr)(resultStart + y * resultData.Stride);
-                        var expectedRow = (IntPtr)(expectedStart + y * expectedData.Stride);
-                        if (memcmp(resultRow, expectedRow, resultData.Width * 3) != 0)
+                        if (memcmp(resultData.Row(y), expectedData.Row(y),
+                            resultData.Width * bytes) != 0)
                         {
                             return string.Format("{0} bitmap data did not match", type);
                         }
                     }
-                }
-                finally
-                {
-                    bmp.UnlockBits(resultData);
-                    expected.UnlockBits(expectedData);
                 }
             }
 
