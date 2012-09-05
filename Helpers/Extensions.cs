@@ -191,8 +191,10 @@ namespace ItemCollage
         /* IntPtr */
         unsafe public static bool IsBlackAt(this IntPtr b, int x, int bytes)
         {
-            return Enumerable.Range(0, bytes).All(dx =>
-                ((byte*)b)[bytes * x + dx] == 0);
+            for (var dx = 0; dx < bytes; dx++)
+                if (((byte*)b)[bytes * x + dx] != 0) return false;
+
+            return true;
         }
 
         /* BitmapData */
