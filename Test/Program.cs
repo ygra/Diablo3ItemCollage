@@ -265,7 +265,8 @@ namespace Test
                 var itemMatch = itemPattern.Match(infile);
                 if (!itemMatch.Success)
                 {
-                    if (success) result = "Unexpectedly found item";
+                    if (success) result = string.Format(
+                        "Unexpectedly found item at {0}", ie.ItemFrame);
                 }
                 else
                 {
