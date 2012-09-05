@@ -102,15 +102,29 @@ namespace ItemCollage
             var max = delta > 0 ? bmp.Width - x : x;
             if (searchWidth > max) throw new ArgumentOutOfRangeException();
 
-            var target = Helper.Range(1, searchWidth, Math.Abs(step))
-                .FirstOrDefault(dx => bmp.IsBlackAt(x + delta * dx, y));
+            var rect = new Rectangle(0, y, bmp.Width, 1);
+            var data = bmp.LockBits(rect, ImageLockMode.ReadOnly,
+                bmp.PixelFormat);
 
-            target = x + delta * target;
+            int target;
+            try
+            {
+                var row = data.Scan0;
+                var bytes = bmp.BytesPerPixel();
 
-            // if possible, move slightly to the left or right to get to the
-            // middle of the frame
-            while (bmp.IsBlackAt(target + delta, y))
-                target += delta;
+                target = Helper.Range(1, searchWidth, Math.Abs(step))
+                    .Select(dx => x + delta * dx)
+                    .FirstOrDefault(dx => row.IsBlackAt(dx, bytes));
+
+                // if possible, move slightly to the left or right to get to the
+                // middle of the frame
+                while (row.IsBlackAt(target + delta, bytes))
+                    target += delta;
+            }
+            finally
+            {
+                bmp.UnlockBits(data);
+            }
 
             return new Point(target, y);
         }
