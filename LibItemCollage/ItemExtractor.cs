@@ -327,7 +327,7 @@ namespace ItemCollage
             var h = nameFrame.Height;
             var w = nameFrame.Width;
             var name = new Bitmap(w, h, bmp.PixelFormat);
-            
+
             unsafe
             {
                 var destRect = new Rectangle(0, 0, w, h);
@@ -351,7 +351,7 @@ namespace ItemCollage
                         for (var y = 0; y < h; y++)
                         {
                             if (map.Row(y).IsBlackAt(x, bytes))
-                                    continue;
+                                continue;
 
                             // copy the matching and all neighboring pixels to get
                             // some kind of font anti-aliasing
@@ -368,8 +368,8 @@ namespace ItemCollage
                                 var dy = y + d.dy;
                                 var source = (byte*)src.Row(dy) + bytes * dx;
                                 var target = (byte*)dest.Row(dy) + bytes * dx;
-                                for (var bit = 0; bit < bytes; bit++)
-                                    target[bit] = source[bit];
+                                for (var b = 0; b < bytes; b++)
+                                    target[b] = source[b];
 
                             }
                         }
