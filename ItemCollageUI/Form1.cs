@@ -10,6 +10,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
 
 namespace ItemCollage
 {
@@ -17,6 +18,8 @@ namespace ItemCollage
     {
         const string UPDATE_URL =
             "https://raw.github.com/ygra/Diablo3ItemCollage/master/version";
+        const string ChangelogUrl =
+            "https://raw.github.com/ygra/Diablo3ItemCollage/master/CHANGELOG";
         const string DOWNLOAD_URL =
             "https://github.com/ygra/Diablo3ItemCollage/downloads";
 
@@ -167,13 +170,66 @@ namespace ItemCollage
 
             if (remote > local)
             {
-                var res = MessageBox.Show(string.Format(
-                    "New version {0} available, download now?", remote),
-                    "Diablo3ItemCollage", MessageBoxButtons.YesNo);
-
-                if (res == DialogResult.Yes)
-                    Process.Start(DOWNLOAD_URL);
+                ShowUpdateAvailable(local, remote);
             }
+        }
+
+        private void ShowUpdateAvailable(Version oldVersion, Version newVersion)
+        {
+            var client = new WebClient();
+            client.Encoding = Encoding.UTF8;
+            client.DownloadStringCompleted +=
+                delegate(object s, DownloadStringCompletedEventArgs e)
+                {
+                    if (e.Error != null)
+                        return;
+
+                    var changelog = GetChangelog(e.Result, oldVersion, newVersion);
+
+                    var res = MessageBox.Show(string.Format(
+                        "New version {0} available, download now?\r\n\r\nChanges:\r\n" + changelog, newVersion),
+                        "Diablo3ItemCollage", MessageBoxButtons.YesNo);
+
+                    if (res == DialogResult.Yes)
+                        Process.Start(DOWNLOAD_URL);
+                };
+
+            client.DownloadStringAsync(new Uri(ChangelogUrl));
+        }
+
+        private string GetChangelog(string completeChangelog, Version oldVersion, Version newVersion)
+        {
+            var lines = Regex.Split(completeChangelog, "\r?\n");
+
+            var versionLine = new Regex(@"^\d{4}-\d{2}-\d{2}\tv(?<version>[\d.]+)");
+            var log = new List<string>();
+            var capture = false;
+            foreach (var line in lines)
+            {
+                // did we hit a line that starts the changelog for a specific version?
+                Match m = versionLine.Match(line);
+                if (m.Success)
+                {
+                    var lineVersion = new Version(m.Groups["version"].Value);
+                    // capture only newer versions
+                    if (lineVersion <= newVersion) capture = true;
+                    // and leave the older ones out
+                    if (lineVersion <= oldVersion) capture = false;
+                }
+
+                // grab line only if it doesn't start with a . which marks minor changes
+                if (capture && !line.StartsWith("."))
+                {
+                    // make the asterisk into a nice bullet point
+                    var lineToAdd = Regex.Replace(line, @"^\*", "     •");
+                    // remove the date from the version line
+                    lineToAdd = Regex.Replace(lineToAdd, @"^[\d-]+\t", "");
+
+                    log.Add(lineToAdd);
+                }
+            }
+
+            return string.Join("\r\n", log.ToArray());
         }
 
         protected override void WndProc(ref Message m)
