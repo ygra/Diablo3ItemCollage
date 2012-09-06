@@ -68,7 +68,6 @@ namespace ItemCollage
 
             var border = FindBorder(bmp, new Point(p.X, bottom));
             var left = border.Left;
-            var right = border.Right;
 
             // verify the left border is indeed black
             skip = 0;
