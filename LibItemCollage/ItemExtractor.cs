@@ -94,7 +94,9 @@ namespace ItemCollage
             {
                 target = Helper.Range(1, searchWidth, Math.Abs(step))
                     .Select(dx => x + delta * dx)
-                    .FirstOrDefault(dx => data.IsBlackAt(dx));
+                    .Where(dx => data.IsBlackAt(dx))
+                    .DefaultIfEmpty(-1)
+                    .First();
 
                 // if possible, move slightly to the left or right to get to the
                 // middle of the frame
@@ -166,7 +168,9 @@ namespace ItemCollage
             var outerPoints = rightBorders.Select(f => FindOuter(bmp, f.Right, f.Top))
                 .Concat(leftBorders.Select(f => FindOuter(bmp, f.Left, f.Bottom, -1)));
 
-            var outerFrames = outerPoints.Distinct()
+            var outerFrames = outerPoints
+                .Where(p => p.X >= 0)
+                .Distinct()
                 .Select(p => SelectFrame(bmp, p))
                 .Where(f => f.Width >= minWidth && f.Height >= minHeight);
 
