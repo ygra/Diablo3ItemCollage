@@ -158,7 +158,7 @@ namespace ItemCollage
 
             // find all left and right border points
             var frames = black.Select(p => FindBorder(bmp, p))
-                .Where(f => f.Width >= minWidth);
+                .Where(f => f.Width >= minWidth).ToList();
             var leftBorders = frames.Distinct(f => f.Left);
             var rightBorders = frames.Distinct(f => f.Right);
 
