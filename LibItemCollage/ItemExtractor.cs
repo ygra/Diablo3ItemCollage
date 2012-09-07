@@ -13,6 +13,8 @@ namespace ItemCollage
         private Bitmap bmp;
         private Point cursorPos;
 
+        private const int MaxSkip = 2;
+
         public Rectangle ItemFrame { get; private set; }
 
         public ItemExtractor(Bitmap bitmap, Point cursorPos)
@@ -43,7 +45,6 @@ namespace ItemCollage
 
         private Rectangle SelectFrame(Bitmap bmp, Point p)
         {
-            const int MAX_SKIP = 2;
             var skip = 0;
 
             var top = 0;
@@ -56,13 +57,13 @@ namespace ItemCollage
 
                 top = Helper.Range(p.Y, 0, -1)
                         .TakeWhile(y => data.IsBlackAt(0, y) ||
-                            skip++ < MAX_SKIP)
+                            skip++ < MaxSkip)
                         .Last(y => data.IsBlackAt(0, y));
 
                 skip = 0;
                 bottom = Helper.Range(p.Y, bmp.Height - 1)
                         .TakeWhile(y => data.IsBlackAt(0, y) ||
-                            skip++ < MAX_SKIP)
+                            skip++ < MaxSkip)
                         .Last(y => data.IsBlackAt(0, y));
             }
 
@@ -70,12 +71,10 @@ namespace ItemCollage
             var left = border.Left;
 
             // verify the left border is indeed black
-            skip = 0;
             var leftRect = new Rectangle(left, 0, 1, bmp.Height);
             using (var data = new LockData(bmp, leftRect))
             {
-                if (!Helper.Range(top, bottom).All(y => data.IsBlackAt(0, y) ||
-                        skip++ < MAX_SKIP))
+                if (!data.IsColumnBlack(0, top, bottom, MaxSkip))
                     return new Rectangle();
             }
 
@@ -219,14 +218,15 @@ namespace ItemCollage
             int left, right, top, bottom;
             using (var data = new LockData(bmp))
             {
+                var b = data.Height - 1;
                 // first, remove the black border to the left and right
-                left = Helper.Range(0, bmp.Width - 1).First(x =>
-                    !data.IsColumnBlack(x));
+                left = Helper.Range(0, data.Width - 1).First(x =>
+                    !data.IsColumnBlack(x, 0, b, MaxSkip));
                 // for the right border, we can't check from top to bottom because
                 // linked items have a non-black [X] at the top right, so we only
                 // check the bottom half
-                right = Helper.Range(bmp.Width - 2, 0, -1).First(x =>
-                    !data.IsColumnBlack(x, bmp.Height / 2)) + 1;
+                right = Helper.Range(data.Width - 2, 0, -1).First(x =>
+                    !data.IsColumnBlack(x, bmp.Height / 2, b, MaxSkip)) + 1;
 
                 // to separate the title from the actual item, simplify move down
                 // from the first non-black row until everything is black again.

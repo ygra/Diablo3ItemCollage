@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Linq;
 
 namespace ItemCollage
 {
@@ -81,9 +82,11 @@ namespace ItemCollage
             return IsColumnBlack(x, ystart, Height - 1);
         }
 
-        public bool IsColumnBlack(int x, int ystart, int yend)
+        public bool IsColumnBlack(int x, int ystart, int yend, int maxSkip = 0)
         {
-            return Helper.Range(ystart, yend).All(y => Row(y).IsBlackAt(x, bytes));
+            var skip = 0;
+            return Helper.Range(ystart, yend).All(y => Row(y).IsBlackAt(x, bytes) ||
+                skip++ < maxSkip);
         }
 
         public bool IsRowNonBlack(int y, int xstart = 0)
@@ -91,10 +94,12 @@ namespace ItemCollage
             return IsRowNonBlack(y, xstart, Width - 1);
         }
 
-        public bool IsRowNonBlack(int y, int xstart, int xend)
+        public bool IsRowNonBlack(int y, int xstart, int xend, int maxSkip = 0)
         {
+            var skip = 0;
             var row = Row(y);
-            return Helper.Range(xstart, xend).All(x => !row.IsBlackAt(x, bytes));
+            return Helper.Range(xstart, xend).All(x => !row.IsBlackAt(x, bytes) ||
+                skip++ < maxSkip);
         }
 
         public bool IsColumnNonBlack(int x, int ystart = 0)
