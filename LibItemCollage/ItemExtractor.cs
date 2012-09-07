@@ -85,7 +85,7 @@ namespace ItemCollage
         {
             var delta = step < 0 ? -1 : 1;
             var max = delta > 0 ? bmp.Width - x : x;
-            if (searchWidth > max) throw new ArgumentOutOfRangeException();
+            if (searchWidth > max) searchWidth = max;
 
             int target;
             var rect = new Rectangle(0, y, bmp.Width, 1);
