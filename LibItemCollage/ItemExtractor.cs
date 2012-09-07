@@ -292,9 +292,14 @@ namespace ItemCollage
             }
 
             // try to detect if the item is a linked one, so we can skip the X
-            int xLeft = Helper.Range(1, outerWidth).TakeWhile(dx =>
-                    !bmp.IsBlackAt(outerWidth - dx, 0))
+            int xLeft;
+            var xRect = new Rectangle(0, 0, outerWidth, 1);
+            using (var data = new LockData(bmp, xRect))
+            {
+                xLeft = Helper.Range(1, outerWidth).TakeWhile(dx =>
+                    !data.IsBlackAt(outerWidth - dx))
                     .LastOrDefault();
+            }
 
             int innerTop, innerBottom, innerLeft, innerRight;
             var rect = new Rectangle(0, 0, outerWidth, outerHeight);
