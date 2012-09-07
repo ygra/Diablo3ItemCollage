@@ -64,5 +64,47 @@ namespace ItemCollage
         {
             return (IntPtr)((byte*)Data.Scan0 + y * Data.Stride);
         }
+
+        public bool IsRowBlack(int y, int xstart = 0)
+        {
+            return IsRowBlack(y, xstart, bitmap.Width - 1);
+        }
+
+        public bool IsRowBlack(int y, int xstart, int xend)
+        {
+            var row = Row(y);
+            return Helper.Range(xstart, xend).All(x => row.IsBlackAt(x, bytes));
+        }
+
+        public bool IsColumnBlack(int x, int ystart = 0)
+        {
+            return IsColumnBlack(x, ystart, Height - 1);
+        }
+
+        public bool IsColumnBlack(int x, int ystart, int yend)
+        {
+            return Helper.Range(ystart, yend).All(y => Row(y).IsBlackAt(x, bytes));
+        }
+
+        public bool IsRowNonBlack(int y, int xstart = 0)
+        {
+            return IsRowNonBlack(y, xstart, Width - 1);
+        }
+
+        public bool IsRowNonBlack(int y, int xstart, int xend)
+        {
+            var row = Row(y);
+            return Helper.Range(xstart, xend).All(x => !row.IsBlackAt(x, bytes));
+        }
+
+        public bool IsColumnNonBlack(int x, int ystart = 0)
+        {
+            return IsColumnNonBlack(x, ystart, Height - 1);
+        }
+
+        public bool IsColumnNonBlack(int x, int ystart, int yend)
+        {
+            return Helper.Range(ystart, yend).All(y => !Row(y).IsBlackAt(x, bytes));
+        }
     }
 }

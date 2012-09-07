@@ -216,33 +216,37 @@ namespace ItemCollage
 
         public static Bitmap ExtractItemName(Bitmap bmp, bool removeFrame)
         {
-            // first, remove the black border to the left and right
-            var left = Helper.Range(0, bmp.Width - 1).First(x =>
-                !bmp.IsColumnBlack(x));
-            // for the right border, we can't check from top to bottom because
-            // linked items have a non-black [X] at the top right, so we only
-            // check the bottom half
-            var right = Helper.Range(bmp.Width - 2, 0, -1).First(x =>
-                !bmp.IsColumnBlack(x, bmp.Height / 2)) + 1;
+            int left, right, top, bottom;
+            using (var data = new LockData(bmp))
+            {
+                // first, remove the black border to the left and right
+                left = Helper.Range(0, bmp.Width - 1).First(x =>
+                    !data.IsColumnBlack(x));
+                // for the right border, we can't check from top to bottom because
+                // linked items have a non-black [X] at the top right, so we only
+                // check the bottom half
+                right = Helper.Range(bmp.Width - 2, 0, -1).First(x =>
+                    !data.IsColumnBlack(x, bmp.Height / 2)) + 1;
 
-            // to separate the title from the actual item, simplify move down
-            // from the first non-black row until everything is black again.
-            // we don't check the full width to work around the [X] on linked
-            // items again. additionally, we skip a few pixels to the left,
-            // as there's sometimes some semi-black border left
-            var top = Helper.Range(0, bmp.Height - 1).First(y =>
-                bmp.IsRowNonBlack(y, left + 2, bmp.Width / 2)) - 1;
+                // to separate the title from the actual item, simplify move down
+                // from the first non-black row until everything is black again.
+                // we don't check the full width to work around the [X] on linked
+                // items again. additionally, we skip a few pixels to the left,
+                // as there's sometimes some semi-black border left
+                top = Helper.Range(0, bmp.Height - 1).First(y =>
+                    data.IsRowNonBlack(y, left + 2, bmp.Width / 2)) - 1;
 
-            // this is the first black row below the title, so the the title
-            // height is given as bottom - top, not bottom - top + 1
-            var bottom = Helper.Range(top + 1, bmp.Height - 1).First(y =>
-                bmp.IsRowBlack(y, left, right));
+                // this is the first black row below the title, so the the title
+                // height is given as bottom - top, not bottom - top + 1
+                bottom = Helper.Range(top + 1, bmp.Height - 1).First(y =>
+                    data.IsRowBlack(y, left, right));
 
-            // remove any left-over semi-black border columns
-            left = Helper.Range(left, bmp.Width - 1).First(x =>
-                bmp.IsColumnNonBlack(x, top + 1, bottom - 1));
-            right = Helper.Range(right, 0, -1).First(x =>
-                bmp.IsColumnNonBlack(x, top + 1, bottom - 1)) + 1;
+                // remove any left-over semi-black border columns
+                left = Helper.Range(left, bmp.Width - 1).First(x =>
+                    data.IsColumnNonBlack(x, top + 1, bottom - 1));
+                right = Helper.Range(right, 0, -1).First(x =>
+                    data.IsColumnNonBlack(x, top + 1, bottom - 1)) + 1;
+            }
 
             // "outer" refers to the title frame, "inner" to the title itself
             var outerWidth = right - left;
@@ -287,27 +291,32 @@ namespace ItemCollage
                     GraphicsUnit.Pixel, attribs);
             }
 
-            // skip first row and column, as there's sometimes a non-
-            // black pixel in there, and again don't check the full width
-            // because of the close button for linked items
-            // first row that contains the item name
-            var innerTop = Helper.Range(1, outerHeight - 1).First(y =>
-                !img.IsRowBlack(y, 1, outerWidth / 2));
-            // again, the first row *below* the item name
-            var innerBottom = Helper.Range(outerHeight - 2, innerTop + 1, -1).First(y =>
-                !img.IsRowBlack(y, 1)) + 1;
-
             // try to detect if the item is a linked one, so we can skip the X
-            var xLeft = Helper.Range(1, outerWidth).TakeWhile(dx =>
-                !bmp.IsBlackAt(outerWidth - dx, 0))
-                .LastOrDefault();
+            int xLeft = Helper.Range(1, outerWidth).TakeWhile(dx =>
+                    !bmp.IsBlackAt(outerWidth - dx, 0))
+                    .LastOrDefault();
 
-            // first column that contains the text (again, skip 1 column)
-            var innerLeft = Helper.Range(1, outerWidth - 1).First(x =>
-                !img.IsColumnBlack(x, innerTop, innerBottom));
-            // the first black column behind the item text
-            var innerRight = Helper.Range(outerWidth - 2 - xLeft, 0, -1).First(x =>
-                !img.IsColumnBlack(x, innerTop, innerBottom)) + 1;
+            int innerTop, innerBottom, innerLeft, innerRight;
+            var rect = new Rectangle(0, 0, outerWidth, outerHeight);
+            using (var data = new LockData(img, rect))
+            {
+                // skip first row and column, as there's sometimes a non-
+                // black pixel in there, and again don't check the full width
+                // because of the close button for linked items
+                // first row that contains the item name
+                innerTop = Helper.Range(1, outerHeight - 1).First(y =>
+                    !data.IsRowBlack(y, 1, outerWidth / 2));
+                // again, the first row *below* the item name
+                innerBottom = Helper.Range(outerHeight - 2, innerTop + 1, -1).First(y =>
+                    !data.IsRowBlack(y, 1)) + 1;
+
+                // first column that contains the text (again, skip 1 column)
+                innerLeft = Helper.Range(1, outerWidth - 1).First(x =>
+                    !data.IsColumnBlack(x, innerTop, innerBottom));
+                // the first black column behind the item text
+                innerRight = Helper.Range(outerWidth - 2 - xLeft, 0, -1).First(x =>
+                    !data.IsColumnBlack(x, innerTop, innerBottom)) + 1;
+            }
 
             var nameFrame = new Rectangle(left + innerLeft, top + innerTop,
                 innerRight - innerLeft, innerBottom - innerTop);
