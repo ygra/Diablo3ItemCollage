@@ -49,21 +49,21 @@ namespace ItemCollage
             var top = 0;
             var bottom = 0;
 
-            var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+            var rect = new Rectangle(p.X, 0, 1, bmp.Height);
             using (var data = new LockData(bmp, rect))
             {
-                if (!data.IsBlackAt(p.X, p.Y)) return new Rectangle();
+                if (!data.IsBlackAt(0, p.Y)) return new Rectangle();
 
                 top = Helper.Range(p.Y, 0, -1)
-                        .TakeWhile(y => data.IsBlackAt(p.X, y) ||
+                        .TakeWhile(y => data.IsBlackAt(0, y) ||
                             skip++ < MAX_SKIP)
-                        .Last(y => data.IsBlackAt(p.X, y));
+                        .Last(y => data.IsBlackAt(0, y));
 
                 skip = 0;
                 bottom = Helper.Range(p.Y, bmp.Height - 1)
-                        .TakeWhile(y => data.IsBlackAt(p.X, y) ||
+                        .TakeWhile(y => data.IsBlackAt(0, y) ||
                             skip++ < MAX_SKIP)
-                        .Last(y => data.IsBlackAt(p.X, y));
+                        .Last(y => data.IsBlackAt(0, y));
             }
 
             var border = FindBorder(bmp, new Point(p.X, bottom));
