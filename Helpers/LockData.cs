@@ -26,6 +26,17 @@ namespace ItemCollage
             bitmap.UnlockBits(Data);
         }
 
+        unsafe public byte* this[int x]
+        {
+            get { return (byte*)Data.Scan0 + bytes * x; }
+            set
+            {
+                var dest = this[x];
+                for (var b = 0; b < bytes; b++)
+                    dest[b] = value[b];
+            }
+        }
+
         unsafe public byte* this[int x, int y]
         {
             get { return (byte*)Row(y) + bytes * x; }
