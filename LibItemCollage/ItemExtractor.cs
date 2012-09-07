@@ -301,28 +301,30 @@ namespace ItemCollage
                     .LastOrDefault();
             }
 
-            int innerTop = 1;
-            int innerBottom = outerHeight - 2;
-            int innerLeft = 1;
-            int innerRight = outerWidth - 2 - xWidth;
+            // first row that contains the item name
+            int innerTop = 0;
+            // again, the first row *below* the item name
+            int innerBottom = outerHeight - 1;
+            // first column that contains the text (again, skip 1 column)
+            int innerLeft = 0;
+            // the first black column behind the item text
+            int innerRight = outerWidth - 1 - xWidth;
             var rect = new Rectangle(0, 0, outerWidth, outerHeight);
             using (var data = new LockData(img, rect))
             {
                 // skip first row and column, as there's sometimes a non-
                 // black pixel in there, and again don't check the full width
                 // because of the close button for linked items.
-                // first row that contains the item name
-                innerTop = Helper.Range(2, outerHeight - 1).First(y =>
+                innerTop = Helper.Range(innerTop + 2, innerBottom).First(y =>
                     !data.IsRowBlack(y, innerLeft, innerRight));
-                // again, the first row *below* the item name
-                innerBottom = Helper.Range(outerHeight - 2, innerTop + 1, -1).First(y =>
+
+                innerBottom = Helper.Range(innerBottom - 1, innerTop, -1).First(y =>
                     !data.IsRowBlack(y, innerLeft, innerRight)) + 1;
 
-                // first column that contains the text (again, skip 1 column)
-                innerLeft = Helper.Range(1, outerWidth - 1).First(x =>
+                innerLeft = Helper.Range(innerLeft + 2, innerRight).First(x =>
                     !data.IsColumnBlack(x, innerTop, innerBottom - 1));
-                // the first black column behind the item text
-                innerRight = Helper.Range(outerWidth - 2 - xWidth, 0, -1).First(x =>
+
+                innerRight = Helper.Range(innerRight - 1, innerLeft, -1).First(x =>
                     !data.IsColumnBlack(x, innerTop, innerBottom - 1)) + 1;
             }
 
