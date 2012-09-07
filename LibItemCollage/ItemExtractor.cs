@@ -226,23 +226,23 @@ namespace ItemCollage
                 // linked items have a non-black [X] at the top right, so we only
                 // check the bottom half
                 right = Helper.Range(data.Width - 2, 0, -1).First(x =>
-                    !data.IsColumnBlack(x, bmp.Height / 2, b, MaxSkip)) + 1;
+                    !data.IsColumnBlack(x, data.Height / 2, b, MaxSkip)) + 1;
 
                 // to separate the title from the actual item, simplify move down
                 // from the first non-black row until everything is black again.
                 // we don't check the full width to work around the [X] on linked
                 // items again. additionally, we skip a few pixels to the left,
                 // as there's sometimes some semi-black border left
-                top = Helper.Range(0, bmp.Height - 1).First(y =>
-                    data.IsRowNonBlack(y, left + 2, bmp.Width / 2)) - 1;
+                top = Helper.Range(0, b).First(y =>
+                    data.IsRowNonBlack(y, left + 2, data.Width / 2)) - 1;
 
                 // this is the first black row below the title, so the the title
                 // height is given as bottom - top, not bottom - top + 1
-                bottom = Helper.Range(top + 1, bmp.Height - 1).First(y =>
+                bottom = Helper.Range(top + 1, b).First(y =>
                     data.IsRowBlack(y, left, right));
 
                 // remove any left-over semi-black border columns
-                left = Helper.Range(left, bmp.Width - 1).First(x =>
+                left = Helper.Range(left, data.Width - 1).First(x =>
                     data.IsColumnNonBlack(x, top + 1, bottom - 1));
                 right = Helper.Range(right, 0, -1).First(x =>
                     data.IsColumnNonBlack(x, top + 1, bottom - 1)) + 1;
