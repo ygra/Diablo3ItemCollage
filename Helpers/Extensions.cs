@@ -84,12 +84,5 @@ namespace ItemCollage
 
             return true;
         }
-
-        /* BitmapData */
-        unsafe public static IntPtr Row(this BitmapData b, int y)
-        {
-            var start = (byte*)b.Scan0;
-            return (IntPtr)(start + y * b.Stride);
-        }
     }
 }
