@@ -71,7 +71,8 @@ namespace ItemCollage
 
             // verify the left border is indeed black
             skip = 0;
-            using (var data = new LockData(bmp, new Rectangle(left, 0, 1, bmp.Height)))
+            var leftRect = new Rectangle(left, 0, 1, bmp.Height);
+            using (var data = new LockData(bmp, leftRect))
             {
                 if (!Helper.Range(top, bottom).All(y => data.IsBlackAt(0, y) ||
                         skip++ < MAX_SKIP))
@@ -113,8 +114,7 @@ namespace ItemCollage
             var w = bmp.Width;
             var h = bmp.Height;
 
-            var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-            using (var data = new LockData(bmp, rect))
+            using (var data = new LockData(bmp))
             {
                 var bytes = bmp.BytesPerPixel();
                 foreach (var y in vertical)

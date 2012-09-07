@@ -13,6 +13,8 @@ namespace ItemCollage
         private Bitmap bitmap;
         private int bytes;
 
+        public LockData(Bitmap bmp) : this(bmp, new Rectangle(0, 0, bmp.Width, bmp.Height)) { }
+
         public LockData(Bitmap bmp, Rectangle rect, ImageLockMode mode = ImageLockMode.ReadOnly)
         {
             Data = bmp.LockBits(rect, mode, bmp.PixelFormat);
