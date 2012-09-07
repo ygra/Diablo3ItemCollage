@@ -265,8 +265,9 @@ namespace ItemCollage
             }
 
             // we have to extract the actual title from the title frame, so
-            // transform the image and remove 26% of the brightness to get
-            // rid of the outer frame and the background color gradient
+            // transform the image to grayscale and remove 26% of its 
+            // brightness to get rid of the outer frame and the background
+            // color gradient
             ColorMatrix grayscale = new ColorMatrix(new float[][]
             {
                 new float[] {0.30f, 0.30f, 0.30f, 0, 0},
