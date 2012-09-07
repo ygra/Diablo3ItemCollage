@@ -292,35 +292,38 @@ namespace ItemCollage
             }
 
             // try to detect if the item is a linked one, so we can skip the X
-            int xLeft;
+            int xWidth;
             var xRect = new Rectangle(0, 0, outerWidth, 1);
             using (var data = new LockData(bmp, xRect))
             {
-                xLeft = Helper.Range(1, outerWidth).TakeWhile(dx =>
+                xWidth = Helper.Range(1, outerWidth).TakeWhile(dx =>
                     !data.IsBlackAt(outerWidth - dx))
                     .LastOrDefault();
             }
 
-            int innerTop, innerBottom, innerLeft, innerRight;
+            int innerTop = 1;
+            int innerBottom = outerHeight - 2;
+            int innerLeft = 1;
+            int innerRight = outerWidth - 2 - xWidth;
             var rect = new Rectangle(0, 0, outerWidth, outerHeight);
             using (var data = new LockData(img, rect))
             {
                 // skip first row and column, as there's sometimes a non-
                 // black pixel in there, and again don't check the full width
-                // because of the close button for linked items
+                // because of the close button for linked items.
                 // first row that contains the item name
-                innerTop = Helper.Range(1, outerHeight - 1).First(y =>
-                    !data.IsRowBlack(y, 1, outerWidth / 2));
+                innerTop = Helper.Range(2, outerHeight - 1).First(y =>
+                    !data.IsRowBlack(y, innerLeft, innerRight));
                 // again, the first row *below* the item name
                 innerBottom = Helper.Range(outerHeight - 2, innerTop + 1, -1).First(y =>
-                    !data.IsRowBlack(y, 1)) + 1;
+                    !data.IsRowBlack(y, innerLeft, innerRight)) + 1;
 
                 // first column that contains the text (again, skip 1 column)
                 innerLeft = Helper.Range(1, outerWidth - 1).First(x =>
-                    !data.IsColumnBlack(x, innerTop, innerBottom));
+                    !data.IsColumnBlack(x, innerTop, innerBottom - 1));
                 // the first black column behind the item text
-                innerRight = Helper.Range(outerWidth - 2 - xLeft, 0, -1).First(x =>
-                    !data.IsColumnBlack(x, innerTop, innerBottom)) + 1;
+                innerRight = Helper.Range(outerWidth - 2 - xWidth, 0, -1).First(x =>
+                    !data.IsColumnBlack(x, innerTop, innerBottom - 1)) + 1;
             }
 
             var nameFrame = new Rectangle(left + innerLeft, top + innerTop,
@@ -332,7 +335,6 @@ namespace ItemCollage
 
             unsafe
             {
-
                 var destRect = new Rectangle(0, 0, w, h);
                 var srcRect = new Rectangle(innerLeft + left, innerTop + top, w, h);
                 var mapRect = new Rectangle(innerLeft, innerTop, w, h);
