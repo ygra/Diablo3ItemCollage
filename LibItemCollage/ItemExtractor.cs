@@ -309,19 +309,36 @@ namespace ItemCollage
             int innerLeft = 0;
             // the first black column behind the item text
             int innerRight = outerWidth - 1 - xWidth;
-            var rect = new Rectangle(0, 0, outerWidth, outerHeight);
-            using (var data = new LockData(img, rect))
+
+            // first, try to get a rough outline of the item title
+            // skip first row and column, as there's sometimes a non-
+            // black pixel in there, and again don't check the full width
+            // because of the close button for linked items.
+            var outerFrame = new Rectangle(left, top, outerWidth, outerHeight);
+            using (var data = new LockData(bmp, outerFrame))
             {
-                // skip first row and column, as there's sometimes a non-
-                // black pixel in there, and again don't check the full width
-                // because of the close button for linked items.
-                innerTop = Helper.Range(innerTop + 2, innerBottom).First(y =>
+                innerTop += Helper.Range(2, innerBottom - innerTop).FirstOrDefault(y =>
+                    !data.IsRowNonBlack(innerTop + y, innerLeft, innerRight));
+                innerBottom -= Helper.Range(1, innerBottom - innerTop - 1).FirstOrDefault(y =>
+                    !data.IsRowNonBlack(innerBottom - y, innerLeft, innerRight)) + 1;
+                innerLeft += Helper.Range(2, data.Width / 2 - innerLeft).FirstOrDefault(x =>
+                    !data.IsColumnNonBlack(innerLeft + x, innerTop, innerBottom - 1));
+                innerRight -= Helper.Range(1, innerRight - innerLeft - 1).FirstOrDefault(x =>
+                    !data.IsColumnNonBlack(innerRight - x, innerTop, innerBottom - 1));
+            }
+
+            // afterwards, try to extract the exact title by looking for a non-
+            // black area on the grayscaled image, using the rough outline we
+            // found before as boundary
+            using (var data = new LockData(img))
+            {
+                innerTop = Helper.Range(innerTop + 1, innerBottom).First(y =>
                     !data.IsRowBlack(y, innerLeft, innerRight));
 
                 innerBottom = Helper.Range(innerBottom - 1, innerTop, -1).First(y =>
                     !data.IsRowBlack(y, innerLeft, innerRight)) + 1;
 
-                innerLeft = Helper.Range(innerLeft + 2, innerRight).First(x =>
+                innerLeft = Helper.Range(innerLeft + 1, innerRight).First(x =>
                     !data.IsColumnBlack(x, innerTop, innerBottom - 1));
 
                 innerRight = Helper.Range(innerRight - 1, innerLeft, -1).First(x =>
