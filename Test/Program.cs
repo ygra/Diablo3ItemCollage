@@ -221,21 +221,14 @@ namespace Test
 
             var sw = new Stopwatch();
             var ie = new ItemExtractor(bmp, cursorPos);
-            Bitmap item = null;
+            Item item = null;
             var success = false;
 
             sw.Start();
             try
             {
-                if (imageCompare)
-                {
-                    item = (Bitmap)ie.ExtractItem();
-                    success = (item != null);
-                }
-                else
-                {
-                    success = ie.FindItem();
-                }
+                success = ie.FindItem();
+                item = ie.ExtractItem(false);
             }
             catch { }
             sw.Stop();
@@ -248,7 +241,7 @@ namespace Test
             var result = "";
             if (imageCompare)
             {
-                result = CompareImageResult(item, outfile, "item");
+                result = CompareImageResult(success ? item.Image : null, outfile, "item");
             }
             else
             {
@@ -287,14 +280,7 @@ namespace Test
                     var titleWatch = new Stopwatch();
                     titleWatch.Start();
 
-                    if (imageCompare)
-                    {
-                        title = ItemExtractor.ExtractItemName(item, true);
-                    }
-                    else
-                    {
-                        title = ie.ExtractItemName(true);
-                    }
+                    title = ItemExtractor.ExtractItemName(item.Image);
 
                     titleWatch.Stop();
 

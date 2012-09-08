@@ -24,19 +24,19 @@ namespace ItemCollage
         private List<CollageItem> collageItems;
         private Font indexFont = new Font("Arial", 20, FontStyle.Bold);
 
-        public Collage(IEnumerable<Image> items, int columns)
+        public Collage(IEnumerable<Item> items, int columns)
         {
             this.columns = columns;
 
             GenerateLayout(items);
         }
 
-        private void GenerateLayout(IEnumerable<Image> items)
+        private void GenerateLayout(IEnumerable<Item> items)
         {
             collageItems = new List<CollageItem>();
 
             var itemList = items.ToList();
-            itemWidth = itemList[0].Width;
+            itemWidth = itemList[0].Image.Width;
 
             var itemIndex = 1;
             var colLengths = new int[columns];
@@ -46,13 +46,13 @@ namespace ItemCollage
 
                 collageItems.Add(new CollageItem
                 {
-                    Item = (Bitmap)item,
+                    Item = item.Image,
                     Column = col,
                     Pos = new Point(col * itemWidth, colLengths[col]),
                     Index = itemIndex++
                 });
 
-                colLengths[col] += item.Height;
+                colLengths[col] += item.Image.Height;
             }
 
             size = new Size(columns * itemWidth, colLengths.Max());

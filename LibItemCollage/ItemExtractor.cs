@@ -192,28 +192,39 @@ namespace ItemCollage
             return true;
         }
 
-        public Image ExtractItem()
+        public Item ExtractItem(bool withTitle = true)
         {
             if (ItemFrame == new Rectangle() && !this.FindItem())
                 return null;
 
-            Bitmap item = new Bitmap(ItemFrame.Width, ItemFrame.Height,
+            Bitmap image = new Bitmap(ItemFrame.Width, ItemFrame.Height,
                 PixelFormat.Format24bppRgb);
-            using (Graphics g = Graphics.FromImage(item))
+            using (Graphics g = Graphics.FromImage(image))
             {
                 var targetFrame = new Rectangle(0, 0, ItemFrame.Width, ItemFrame.Height);
                 g.DrawImage(bmp, targetFrame, ItemFrame, GraphicsUnit.Pixel);
             }
 
+            var item = new Item();
+            item.Image = image;
+
+            if (withTitle)
+            {
+                var titleFrame = ExtractTitleFrame(image);
+                var title = ExtractItemTitle(titleFrame);
+                item.TitleFrame = titleFrame;
+                item.Title = title;
+            }
+
             return item;
         }
 
-        public Bitmap ExtractItemName(bool removeFrame)
+        public static Bitmap ExtractItemName(Bitmap item)
         {
-            return ItemExtractor.ExtractItemName((Bitmap)this.ExtractItem(), removeFrame);
+            return ExtractItemTitle(ExtractTitleFrame(item));
         }
 
-        public static Bitmap ExtractItemName(Bitmap bmp, bool removeFrame)
+        public static Bitmap ExtractTitleFrame(Bitmap bmp)
         {
             int left, right, top, bottom;
             using (var data = new LockData(bmp))
@@ -248,25 +259,27 @@ namespace ItemCollage
                     data.IsColumnNonBlack(x, top + 1, bottom - 1)) + 1;
             }
 
-            // "outer" refers to the title frame, "inner" to the title itself
-            var outerWidth = right - left;
-            var outerHeight = bottom - top;
+            var width = right - left;
+            var height = bottom - top;
 
-            if (!removeFrame)
+            var targetFrame = new Rectangle(left, top, width, height);
+
+            var title = new Bitmap(width, height, PixelFormat.Format24bppRgb);
+            using (Graphics g = Graphics.FromImage(title))
             {
-                // just copy the item frame to a new bitmap and return that
-                var targetFrame = new Rectangle(left, top, outerWidth, outerHeight);
-
-                var title = new Bitmap(outerWidth, outerHeight,
-                    PixelFormat.Format24bppRgb);
-                using (Graphics g = Graphics.FromImage(title))
-                {
-                    g.DrawImage(bmp, new Rectangle(0, 0, outerWidth, outerHeight),
-                        targetFrame, GraphicsUnit.Pixel);
-                }
-
-                return title;
+                g.DrawImage(bmp, new Rectangle(0, 0, width, height), targetFrame,
+                    GraphicsUnit.Pixel);
             }
+
+            return title;
+        }
+
+        // extracts the actual title from a title frame
+        public static Bitmap ExtractItemTitle(Bitmap bmp)
+        {
+            // "outer" refers to the title frame, "inner" to the title itself
+            var outerWidth = bmp.Width;
+            var outerHeight = bmp.Height;
 
             // we have to extract the actual title from the title frame, so
             // transform the image to grayscale and remove 26% of its 
@@ -287,7 +300,7 @@ namespace ItemCollage
             using (Graphics g = Graphics.FromImage(img))
             {
                 var target = new Rectangle(0, 0, outerWidth, outerHeight);
-                g.DrawImage(bmp, target, left, top, outerWidth, outerHeight,
+                g.DrawImage(bmp, target, 0, 0, outerWidth, outerHeight,
                     GraphicsUnit.Pixel, attribs);
             }
 
@@ -314,7 +327,7 @@ namespace ItemCollage
             // skip first row and column, as there's sometimes a non-
             // black pixel in there, and again don't check the full width
             // because of the close button for linked items.
-            var outerFrame = new Rectangle(left, top, outerWidth, outerHeight);
+            var outerFrame = new Rectangle(0, 0, outerWidth, outerHeight);
             using (var data = new LockData(bmp, outerFrame))
             {
                 innerTop += Helper.Range(2, innerBottom - innerTop).FirstOrDefault(y =>
@@ -345,7 +358,7 @@ namespace ItemCollage
                     !data.IsColumnBlack(x, innerTop, innerBottom - 1)) + 1;
             }
 
-            var nameFrame = new Rectangle(left + innerLeft, top + innerTop,
+            var nameFrame = new Rectangle(innerLeft, innerTop,
                 innerRight - innerLeft, innerBottom - innerTop);
 
             var h = nameFrame.Height;
@@ -355,12 +368,11 @@ namespace ItemCollage
             unsafe
             {
                 var destRect = new Rectangle(0, 0, w, h);
-                var srcRect = new Rectangle(innerLeft + left, innerTop + top, w, h);
-                var mapRect = new Rectangle(innerLeft, innerTop, w, h);
+                var srcRect = new Rectangle(innerLeft, innerTop, w, h);
 
                 using (var dest = new LockData(name, destRect, ImageLockMode.ReadWrite))
                 using (var src = new LockData(bmp, srcRect))
-                using (var map = new LockData(img, mapRect))
+                using (var map = new LockData(img, srcRect))
                 {
                     for (var x = 0; x < w; x++)
                     {

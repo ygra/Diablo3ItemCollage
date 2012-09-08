@@ -12,9 +12,6 @@ namespace ItemCollage
         const int xMargin = 4;
         const int yMargin = 2;
 
-        IDictionary<Bitmap, Bitmap> titles;
-        Queue<Bitmap> titleQueue;
-
         double scalingFactor = 1;
 
         public class ItemClickEventArgs : EventArgs
@@ -29,23 +26,6 @@ namespace ItemCollage
         {
             this.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
             this.DoubleBuffered = true;
-            this.titles = new Dictionary<Bitmap, Bitmap>();
-            this.titleQueue = new Queue<Bitmap>(titleCount + 1);
-        }
-
-        private Bitmap GetTitle(Bitmap item)
-        {
-            if (titles.ContainsKey(item))
-                return titles[item];
-
-            var title = ItemExtractor.ExtractItemName(item, true);
-
-            titleQueue.Enqueue(title);
-            if (titleQueue.Count > titleCount)
-                titleQueue.Dequeue();
-
-            titles[item] = title;
-            return title;
         }
 
         private int GetListWidth()
@@ -60,10 +40,8 @@ namespace ItemCollage
 
             UpdateScalingFactor();
 
-            var item = (Bitmap)this.Items[e.Index];
-
-            var title = GetTitle(item);
-            e.ItemHeight = (int)(title.Height * scalingFactor) + 2 * yMargin;
+            var item = (Item)this.Items[e.Index];
+            e.ItemHeight = (int)(item.Title.Height * scalingFactor) + 2 * yMargin;
 
             // account for the separator
             if (e.Index > 0)
@@ -102,8 +80,8 @@ namespace ItemCollage
         public void UpdateScalingFactor()
         {
             scalingFactor =
-                Items.Cast<Bitmap>()
-                    .Select(b => GetScalingFactor(GetTitle(b).Width))
+                Items.Cast<Item>()
+                    .Select(b => GetScalingFactor(b.Title.Width))
                     .DefaultIfEmpty(1)
                     .Min();
         }
@@ -122,9 +100,9 @@ namespace ItemCollage
         {
             if (e.Index < 0 || e.Index >= Items.Count) return;
 
-            var item = (Bitmap)this.Items[e.Index];
+            var item = (Item)this.Items[e.Index];
 
-            var image = GetTitle(item);
+            var image = item.Title;
 
             var drawWidth = (int)(image.Width * scalingFactor);
             var drawHeight = (int)(image.Height * scalingFactor);

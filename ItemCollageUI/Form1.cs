@@ -24,7 +24,7 @@ namespace ItemCollage
             "https://github.com/ygra/Diablo3ItemCollage/downloads";
 
         IDictionary<GlobalHotkey, Action> hotkeys;
-        BindingList<Image> items = new BindingList<Image>();
+        BindingList<Item> items = new BindingList<Item>();
         ImageTooltip tooltip = new ImageTooltip();
 
         public Form1()
@@ -78,7 +78,7 @@ namespace ItemCollage
             this.Opacity = 1;
 
             var ie = new ItemExtractor(screen, cursorPos);
-            Image item = null;
+            Item item = null;
             try
             {
                 item = ie.ExtractItem();
@@ -94,7 +94,7 @@ namespace ItemCollage
             }
             else
             {
-                Clipboard.SetImage(item);
+                Clipboard.SetImage(item.Image);
                 items.Add(item);
                 itemListBox1.SelectedIndex = itemListBox1.Items.Count - 1;
                 Debug.Print("{0} items in ListBox", itemListBox1.Items.Count);
@@ -124,12 +124,10 @@ namespace ItemCollage
                 if (item != null)
                 {
                     var outfile = Path.Combine(testFolder, baseName + ".out.png");
-                    item.Save(outfile);
+                    item.Image.Save(outfile);
 
                     var titlefile = Path.Combine(testFolder, baseName + ".title.png");
-                    // TODO: use the list's cache
-                    var title = ItemExtractor.ExtractItemName((Bitmap)item, true);
-                    title.Save(titlefile);
+                    item.Title.Save(titlefile);
                 }
             }
 
@@ -303,9 +301,9 @@ namespace ItemCollage
             if (itemIndex == ListBox.NoMatches) return;
 
             var item = items[itemIndex];
-            if (tooltip.Image == item && tooltip.Visible) return;
+            if (tooltip.Image == item.Image && tooltip.Visible) return;
 
-            tooltip.Image = item;
+            tooltip.Image = item.Image;
             var location = PointToScreen(itemListBox1.Location);
             location.Offset(itemListBox1.Width, 0);
 
