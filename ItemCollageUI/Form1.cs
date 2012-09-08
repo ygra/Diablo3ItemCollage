@@ -16,11 +16,11 @@ namespace ItemCollage
 {
     public partial class Form1 : Form
     {
-        const string UPDATE_URL =
+        const string UpdateUrl =
             "https://raw.github.com/ygra/Diablo3ItemCollage/master/version";
         const string ChangelogUrl =
             "https://raw.github.com/ygra/Diablo3ItemCollage/master/CHANGELOG";
-        const string DOWNLOAD_URL =
+        const string DownloadUrl =
             "https://github.com/ygra/Diablo3ItemCollage/downloads";
 
         IDictionary<GlobalHotkey, Action> hotkeys;
@@ -153,7 +153,7 @@ namespace ItemCollage
                         CompareVersions(e.Result);
                 };
 
-            client.DownloadStringAsync(new Uri(UPDATE_URL));
+            client.DownloadStringAsync(new Uri(UpdateUrl));
         }
 
         private void CheckUpdateError(Exception error)
@@ -189,7 +189,7 @@ namespace ItemCollage
                         "Diablo3ItemCollage", MessageBoxButtons.YesNo);
 
                     if (res == DialogResult.Yes)
-                        Process.Start(DOWNLOAD_URL);
+                        Process.Start(DownloadUrl);
                 };
 
             client.DownloadStringAsync(new Uri(ChangelogUrl));
