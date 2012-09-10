@@ -32,6 +32,7 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.button1 = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
+            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.itemListBox1 = new ItemCollage.ItemListBox();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
@@ -41,7 +42,7 @@
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label1.AutoSize = true;
             this.label1.ForeColor = System.Drawing.Color.White;
-            this.label1.Location = new System.Drawing.Point(12, 27);
+            this.label1.Location = new System.Drawing.Point(12, 25);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(48, 13);
             this.label1.TabIndex = 2;
@@ -51,13 +52,14 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.linkLabel1);
             this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 288);
+            this.panel1.Location = new System.Drawing.Point(0, 290);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(264, 49);
+            this.panel1.Size = new System.Drawing.Size(264, 47);
             this.panel1.TabIndex = 3;
             // 
             // button1
@@ -67,7 +69,7 @@
             this.button1.Enabled = false;
             this.button1.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button1.Location = new System.Drawing.Point(186, 22);
+            this.button1.Location = new System.Drawing.Point(186, 20);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 4;
@@ -79,14 +81,30 @@
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.label2.AutoSize = true;
             this.label2.ForeColor = System.Drawing.Color.Silver;
             this.label2.Location = new System.Drawing.Point(3, 3);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(258, 13);
+            this.label2.Size = new System.Drawing.Size(175, 13);
             this.label2.TabIndex = 3;
-            this.label2.Text = "Grab items with F1, click them to remove";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.label2.Text = "Grab items with F1, click to remove.";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.label2.UseMnemonic = false;
+            // 
+            // linkLabel1
+            // 
+            this.linkLabel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.linkLabel1.AutoSize = true;
+            this.linkLabel1.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.linkLabel1.Location = new System.Drawing.Point(211, 3);
+            this.linkLabel1.Name = "linkLabel1";
+            this.linkLabel1.Size = new System.Drawing.Size(50, 13);
+            this.linkLabel1.TabIndex = 5;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "Clear List";
+            this.linkLabel1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.linkLabel1.UseMnemonic = false;
+            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
             // itemListBox1
             // 
@@ -97,7 +115,7 @@
             this.itemListBox1.ForeColor = System.Drawing.Color.White;
             this.itemListBox1.Location = new System.Drawing.Point(0, 0);
             this.itemListBox1.Name = "itemListBox1";
-            this.itemListBox1.Size = new System.Drawing.Size(264, 288);
+            this.itemListBox1.Size = new System.Drawing.Size(264, 290);
             this.itemListBox1.TabIndex = 4;
             this.itemListBox1.MouseLeave += new System.EventHandler(this.itemListBox1_MouseLeave);
             this.itemListBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.itemListBox1_MouseMove);
@@ -133,6 +151,7 @@
         private ItemListBox itemListBox1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.LinkLabel linkLabel1;
     }
 }
 
