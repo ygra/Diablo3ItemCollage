@@ -315,7 +315,7 @@ namespace ItemCollage
                 location.Y = bounds.Bottom - tooltip.Height;
 
             if (!tooltip.Visible)
-                tooltip.Show(this);
+                Helper.ShowInactiveTopmost(tooltip);
 
             // this has to happen after Show, as otherwise it's ignored until
             // the tooltip gets redrawn
