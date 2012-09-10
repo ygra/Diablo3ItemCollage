@@ -19,7 +19,7 @@ namespace ItemCollage
         const string UpdateUrl =
             "https://raw.github.com/ygra/Diablo3ItemCollage/master/version";
         const string ChangelogUrl =
-            "https://raw.github.com/ygra/Diablo3ItemCollage/master/CHANGELOG";
+            "https://raw.github.com/ygra/Diablo3ItemCollage/master/changelog";
         const string DownloadUrl =
             "https://github.com/ygra/Diablo3ItemCollage/downloads";
 
