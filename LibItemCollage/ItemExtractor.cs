@@ -115,7 +115,6 @@ namespace ItemCollage
 
             using (var data = new LockData(bmp))
             {
-                var bytes = bmp.BytesPerPixel();
                 foreach (var y in vertical)
                 {
                     foreach (var x in horizontal)
