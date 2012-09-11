@@ -131,6 +131,7 @@
             this.DoubleBuffered = true;
             this.ForeColor = System.Drawing.Color.White;
             this.MaximizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(250, 125);
             this.Name = "Form1";
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
