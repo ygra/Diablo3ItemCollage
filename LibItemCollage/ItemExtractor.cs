@@ -273,17 +273,51 @@ namespace ItemCollage
             return title;
         }
 
-        // extracts the actual title from a title frame
-        public static Bitmap ExtractItemTitle(Bitmap bmp)
+        unsafe private static Bitmap CopyName(Bitmap source, Bitmap mapper, Rectangle srcRect)
         {
-            // "outer" refers to the title frame, "inner" to the title itself
-            var outerWidth = bmp.Width;
-            var outerHeight = bmp.Height;
+            var w = srcRect.Width;
+            var h = srcRect.Height;
+            var name = new Bitmap(w, h, source.PixelFormat);
 
-            // we have to extract the actual title from the title frame, so
-            // transform the image to grayscale and remove 26% of its 
-            // brightness to get rid of the outer frame and the background
-            // color gradient
+            var destRect = new Rectangle(0, 0, w, h);
+
+            using (var dest = new LockData(name, destRect, ImageLockMode.ReadWrite))
+            using (var src = new LockData(source, srcRect))
+            using (var map = new LockData(mapper, srcRect))
+            {
+                for (var x = 0; x < w; x++)
+                {
+                    for (var y = 0; y < h; y++)
+                    {
+                        if (map.IsBlackAt(x, y))
+                            continue;
+
+                        // copy the matching and all neighboring pixels to get
+                        // some kind of font anti-aliasing
+                        var points = from dx in Helper.Range(-1, 1)
+                                        from dy in Helper.Range(-1, 1)
+                                        let fy = y + dy
+                                        let fx = x + dx
+                                        where fy >= 0 && fy < h && fx >= 0 && fx < w
+                                        select new { dx, dy };
+
+                        foreach (var d in points)
+                        {
+                            var dx = x + d.dx;
+                            var dy = y + d.dy;
+                            dest[dx, dy] = src[dx, dy];
+                        }
+                    }
+                }
+            }
+
+            return name;
+        }
+
+        private static Bitmap ConvertToGrayscale(Bitmap bmp)
+        {
+            var width = bmp.Width;
+            var height = bmp.Height;
             ColorMatrix grayscale = new ColorMatrix(new float[][]
             {
                 new float[] {0.30f, 0.30f, 0.30f, 0, 0},
@@ -295,13 +329,29 @@ namespace ItemCollage
 
             var attribs = new ImageAttributes();
             attribs.SetColorMatrix(grayscale);
-            Bitmap img = new Bitmap(outerWidth, outerHeight, bmp.PixelFormat);
+            Bitmap img = new Bitmap(width, height, bmp.PixelFormat);
             using (Graphics g = Graphics.FromImage(img))
             {
-                var target = new Rectangle(0, 0, outerWidth, outerHeight);
-                g.DrawImage(bmp, target, 0, 0, outerWidth, outerHeight,
+                var target = new Rectangle(0, 0, width, height);
+                g.DrawImage(bmp, target, 0, 0, width, height,
                     GraphicsUnit.Pixel, attribs);
             }
+
+            return img;
+        }
+
+        // extracts the actual title from a title frame
+        public static Bitmap ExtractItemTitle(Bitmap bmp)
+        {
+            // "outer" refers to the title frame, "inner" to the title itself
+            var outerWidth = bmp.Width;
+            var outerHeight = bmp.Height;
+
+            // we have to extract the actual title from the title frame, so
+            // transform the image to grayscale and remove 26% of its
+            // brightness to get rid of the outer frame and the background
+            // color gradient
+            var img = ConvertToGrayscale(bmp);
 
             // try to detect if the item is a linked one, so we can skip the X
             int xWidth;
@@ -360,47 +410,7 @@ namespace ItemCollage
             var nameFrame = new Rectangle(innerLeft, innerTop,
                 innerRight - innerLeft, innerBottom - innerTop);
 
-            var h = nameFrame.Height;
-            var w = nameFrame.Width;
-            var name = new Bitmap(w, h, bmp.PixelFormat);
-
-            unsafe
-            {
-                var destRect = new Rectangle(0, 0, w, h);
-                var srcRect = new Rectangle(innerLeft, innerTop, w, h);
-
-                using (var dest = new LockData(name, destRect, ImageLockMode.ReadWrite))
-                using (var src = new LockData(bmp, srcRect))
-                using (var map = new LockData(img, srcRect))
-                {
-                    for (var x = 0; x < w; x++)
-                    {
-                        for (var y = 0; y < h; y++)
-                        {
-                            if (map.IsBlackAt(x, y))
-                                continue;
-
-                            // copy the matching and all neighboring pixels to get
-                            // some kind of font anti-aliasing
-                            var points = from dx in Helper.Range(-1, 1)
-                                         from dy in Helper.Range(-1, 1)
-                                         let fy = y + dy
-                                         let fx = x + dx
-                                         where fy >= 0 && fy < h && fx >= 0 && fx < w
-                                         select new { dx, dy };
-
-                            foreach (var d in points)
-                            {
-                                var dx = x + d.dx;
-                                var dy = y + d.dy;
-                                dest[dx, dy] = src[dx, dy];
-                            }
-                        }
-                    }
-                }
-            }
-
-            return name;
+            return CopyName(bmp, img, nameFrame);
         }
     }
 }
