@@ -343,74 +343,69 @@ namespace ItemCollage
         // extracts the actual title from a title frame
         public static Bitmap ExtractItemTitle(Bitmap bmp)
         {
-            // "outer" refers to the title frame, "inner" to the title itself
-            var outerWidth = bmp.Width;
-            var outerHeight = bmp.Height;
-
-            // we have to extract the actual title from the title frame, so
-            // transform the image to grayscale and remove 26% of its
-            // brightness to get rid of the outer frame and the background
-            // color gradient
-            var img = ConvertToGrayscale(bmp);
-
-            // try to detect if the item is a linked one, so we can skip the X
-            int xWidth;
-            var xRect = new Rectangle(0, 0, outerWidth, 1);
-            using (var data = new LockData(bmp, xRect))
+            // first, flood-fill the actual item frame to remove it
+            using (var data = new LockData(bmp))
             {
-                xWidth = Helper.Range(1, outerWidth).TakeWhile(dx =>
-                    !data.IsBlackAt(outerWidth - dx))
-                    .LastOrDefault();
+                var w = data.Width;
+                var h = data.Height;
+
+                // we start at all border points to make sure we remove the
+                // full border, and not just a part of it
+                for (var x = 0; x < w; x++)
+                {
+                    TraverseFill(data, x, 0);
+                    TraverseFill(data, x, h - 1);
+                }
+
+                for (var y = 0; y < h; y++)
+                {
+                    TraverseFill(data, 0, y);
+                    TraverseFill(data, w - 1, y);
+                }
             }
 
-            // first row that contains the item name
-            int innerTop = 0;
-            // again, the first row *below* the item name
-            int innerBottom = outerHeight - 1;
-            // first column that contains the text (again, skip 1 column)
-            int innerLeft = 0;
-            // the first black column behind the item text
-            int innerRight = outerWidth - 1 - xWidth;
+            // then, convert the image to grayscale and reduce the brightness
+            // by 0.26 to get rid of the background color gradient
+            var gray = ConvertToGrayscale(bmp);
 
-            // first, try to get a rough outline of the item title
-            // skip first row and column, as there's sometimes a non-
-            // black pixel in there, and again don't check the full width
-            // because of the close button for linked items.
-            var outerFrame = new Rectangle(0, 0, outerWidth, outerHeight);
-            using (var data = new LockData(bmp, outerFrame))
+            // we detect the name by simply looking for any non-black pixels
+            // that are left after flood-filling the outer frame and removing
+            // the name background
+            // "inner" refers to the rectangle containing only the item name
+            int innerTop, innerLeft, innerBottom, innerRight;
+            using (var data = new LockData(gray))
             {
-                innerTop += Helper.Range(2, innerBottom - innerTop).FirstOrDefault(y =>
-                    !data.IsRowNonBlack(innerTop + y, innerLeft, innerRight));
-                innerBottom -= Helper.Range(1, innerBottom - innerTop - 1).FirstOrDefault(y =>
-                    !data.IsRowNonBlack(innerBottom - y, innerLeft, innerRight)) + 1;
-                innerLeft += Helper.Range(2, data.Width / 2 - innerLeft).FirstOrDefault(x =>
-                    !data.IsColumnNonBlack(innerLeft + x, innerTop, innerBottom - 1));
-                innerRight -= Helper.Range(1, innerRight - innerLeft - 1).FirstOrDefault(x =>
-                    !data.IsColumnNonBlack(innerRight - x, innerTop, innerBottom - 1));
-            }
+                var w = data.Width;
+                var h = data.Height;
 
-            // afterwards, try to extract the exact title by looking for a non-
-            // black area on the grayscaled image, using the rough outline we
-            // found before as boundary
-            using (var data = new LockData(img))
-            {
-                innerTop = Helper.Range(innerTop + 1, innerBottom).First(y =>
-                    !data.IsRowBlack(y, innerLeft, innerRight));
+                innerTop = Helper.Range(0, h - 1).First(y => !data.IsRowBlack(y));
+                innerBottom = Helper.Range(h - 1, 0, -1).First(y => !data.IsRowBlack(y));
 
-                innerBottom = Helper.Range(innerBottom - 1, innerTop, -1).First(y =>
-                    !data.IsRowBlack(y, innerLeft, innerRight)) + 1;
-
-                innerLeft = Helper.Range(innerLeft + 1, innerRight).First(x =>
-                    !data.IsColumnBlack(x, innerTop, innerBottom - 1));
-
-                innerRight = Helper.Range(innerRight - 1, innerLeft, -1).First(x =>
-                    !data.IsColumnBlack(x, innerTop, innerBottom - 1)) + 1;
+                innerLeft = Helper.Range(0, w - 1).First(x =>
+                    !data.IsColumnBlack(x, innerTop, innerBottom));
+                innerRight = Helper.Range(w - 1, 0, -1).First(x =>
+                    !data.IsColumnBlack(x, innerTop, innerBottom));
             }
 
             var nameFrame = new Rectangle(innerLeft, innerTop,
-                innerRight - innerLeft, innerBottom - innerTop);
+                innerRight - innerLeft + 1, innerBottom - innerTop + 1);
 
-            return CopyName(bmp, img, nameFrame);
+            // and copy the name with font anti-aliasing
+            return CopyName(bmp, gray, nameFrame);
+        }
+
+        unsafe private static void TraverseFill(LockData data, int x, int y)
+        {
+            if (x < 0 || x >= data.Width) return;
+            if (y < 0 || y >= data.Height) return;
+            if (data.IsBlackAt(x, y)) return;
+
+            data.SetBlack(x, y);
+
+            TraverseFill(data, x - 1, y);
+            TraverseFill(data, x + 1, y);
+            TraverseFill(data, x, y - 1);
+            TraverseFill(data, x, y + 1);
         }
     }
 }

@@ -51,6 +51,12 @@ namespace ItemCollage
             }
         }
 
+        unsafe public void SetBlack(int x, int y)
+        {
+            var dest = this[x, y];
+            for (var b = 0; b < bytes; b++) dest[b] = 0;
+        }
+
         public bool IsBlackAt(int x)
         {
             return Data.Scan0.IsBlackAt(x, bytes);
