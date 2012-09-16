@@ -103,7 +103,8 @@ namespace ItemCollage
             }
             else
             {
-                Clipboard.SetImage(item.Image);
+                if (options.ItemToClipboard)
+                    Clipboard.SetImage(item.Image);
                 items.Add(item);
                 itemListBox1.SelectedIndex = itemListBox1.Items.Count - 1;
                 Debug.Print("{0} items in ListBox", itemListBox1.Items.Count);
@@ -151,6 +152,8 @@ namespace ItemCollage
 
         private void CheckForUpdates()
         {
+            if (!options.CheckForUpdates) return;
+
             var client = new WebClient();
             client.Encoding = Encoding.UTF8;
             client.DownloadStringCompleted +=
@@ -288,7 +291,9 @@ namespace ItemCollage
             var fileName = string.Format("items-{0:yyyyMMdd-HHmmss}.png", DateTime.Now);
             var file = Path.Combine(picFolder, fileName);
             b.Save(file);
-            Clipboard.SetImage(b);
+
+            if (options.CollageToClipboard)
+                Clipboard.SetImage(b);
 
             items.Clear();
             Status("Collage saved");
