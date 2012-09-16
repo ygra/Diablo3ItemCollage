@@ -26,6 +26,7 @@ namespace ItemCollage
         IDictionary<GlobalHotkey, Action> hotkeys;
         BindingList<Item> items = new BindingList<Item>();
         ImageTooltip tooltip = new ImageTooltip();
+        Options options = new Options();
 
         public Form1()
         {
@@ -64,6 +65,14 @@ namespace ItemCollage
             {
                 button1.Enabled = items.Count > 0;
             };
+
+            // Data binding, options
+            chkCopyCollages.DataBindings.Add("Checked", options, "CollageToClipboard");
+            chkCopyItems.DataBindings.Add("Checked", options, "ItemToClipboard");
+            chkUpdates.DataBindings.Add("Checked", options, "CheckForUpdates");
+            chkTopMost.DataBindings.Add("Checked", options, "TopMost");
+
+            this.DataBindings.Add("TopMost", chkTopMost, "Checked");
         }
 
         private void GrabItem(bool saveScreenshot = false)
@@ -90,7 +99,7 @@ namespace ItemCollage
 
             if (item == null)
             {
-                label1.Text = "No item found";
+                Status("No item found");
             }
             else
             {
@@ -135,9 +144,9 @@ namespace ItemCollage
 
         private void UpdateLabel()
         {
-            label1.Text = string.Format("{0} item{1}",
+            Status(string.Format("{0} item{1}",
                 items.Count == 0 ? "No" : items.Count.ToString(),
-                items.Count != 1 ? "s" : "");
+                items.Count != 1 ? "s" : ""));
         }
 
         private void CheckForUpdates()
@@ -282,7 +291,7 @@ namespace ItemCollage
             Clipboard.SetImage(b);
 
             items.Clear();
-            label1.Text = "Collage saved";
+            Status("Collage saved");
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -292,7 +301,7 @@ namespace ItemCollage
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            this.TopMost = true;
+            this.TopMost = options.TopMost;
         }
 
         private void itemListBox1_MouseMove(object sender, MouseEventArgs e)
@@ -330,6 +339,27 @@ namespace ItemCollage
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             items.Clear();
+        }
+
+        private void ToggleOptions()
+        {
+            pnlOptions.Visible = !pnlOptions.Visible;
+            itemListBox1.Visible = !itemListBox1.Visible;
+            lblHelp.Text = pnlOptions.Visible ?
+                "Options are saved automatically." :
+                "Grab items with F1, click to remove.";
+
+            if (!pnlOptions.Visible)
+                options.Save();
+        }
+
+        private void Status(string s)
+        {
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            ToggleOptions();
         }
 
     }
