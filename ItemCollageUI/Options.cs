@@ -24,8 +24,11 @@ namespace ItemCollage
             get { return _topMost; }
             set
             {
-                _topMost = value;
-                NotifyPropertyChanged("TopMost");
+                if (value != _topMost)
+                {
+                    _topMost = value;
+                    NotifyPropertyChanged("TopMost");
+                }
             }
         }
 
@@ -34,8 +37,11 @@ namespace ItemCollage
             get { return _checkForUpdates; }
             set
             {
-                _checkForUpdates = value;
-                NotifyPropertyChanged("CheckForUpdates");
+                if (value != _checkForUpdates)
+                {
+                    _checkForUpdates = value;
+                    NotifyPropertyChanged("CheckForUpdates");
+                }
             }
         }
 
@@ -44,8 +50,11 @@ namespace ItemCollage
             get { return _itemToClipboard; }
             set
             {
-                _itemToClipboard = value;
-                NotifyPropertyChanged("ItemToClipboard");
+                if (value != _itemToClipboard)
+                {
+                    _itemToClipboard = value;
+                    NotifyPropertyChanged("ItemToClipboard");
+                }
             }
         }
 
@@ -54,8 +63,11 @@ namespace ItemCollage
             get { return _collageToClipboard; }
             set
             {
-                _collageToClipboard = value;
-                NotifyPropertyChanged("CollageToClipboard");
+                if (value != _collageToClipboard)
+                {
+                    _collageToClipboard = value;
+                    NotifyPropertyChanged("CollageToClipboard");
+                }
             }
         }
 
