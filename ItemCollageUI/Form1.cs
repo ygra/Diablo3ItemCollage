@@ -67,12 +67,19 @@ namespace ItemCollage
             };
 
             // Data binding, options
-            chkCopyCollages.DataBindings.Add("Checked", options, "CollageToClipboard");
-            chkCopyItems.DataBindings.Add("Checked", options, "ItemToClipboard");
-            chkUpdates.DataBindings.Add("Checked", options, "CheckForUpdates");
-            chkTopMost.DataBindings.Add("Checked", options, "TopMost");
+            var immediately = DataSourceUpdateMode.OnPropertyChanged;
 
-            this.DataBindings.Add("TopMost", chkTopMost, "Checked");
+            chkCopyCollages.DataBindings.Add("Checked", options,
+                "CollageToClipboard", false, immediately);
+            chkCopyItems.DataBindings.Add("Checked", options,
+                "ItemToClipboard", false, immediately);
+            chkUpdates.DataBindings.Add("Checked", options,
+                "CheckForUpdates", false, immediately);
+            chkTopMost.DataBindings.Add("Checked", options,
+                "TopMost", false, immediately);
+
+            this.DataBindings.Add("TopMost", options,
+                "TopMost", false, immediately);
         }
 
         private void GrabItem(bool saveScreenshot = false)
