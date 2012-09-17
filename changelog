@@ -1,3 +1,11 @@
+2012-09-18	v0.2.2
+
+* Options dialog added.
+. Drastically improved speed of item extraction from a screenshot.
+. Fixed title extraction for linked items.
+. Changes are now displayed in the update notification.
+. Fixed a few potential crashes.
+
 2012-08-24	v0.2.1
 
 * Improved item name extraction, which now works correctly for linked items.
