@@ -10,16 +10,40 @@ parse_token () {
 	echo "$2" | sed -nre "/^\\s*\"$1\":\\s*\"?/{s///;s/\"?,?\\s*$//;p}"
 }
 
+authfile="$(dirname "$0")/.authtoken"
+offline=
+
 if [[ "$1" == "-o" ]]; then
   # don't do any git stuff, don't upload the build
 	offline=1
 	shift
+elif [[ "$1" == "-t" ]]; then
+  [[ -z "$2" ]] && die "Username required"
+  user="$2"
+
+  resp=$(curl -s -u "$user" -d '{"scopes":["public_repo"],"note":"Build script"}' \
+              https://api.github.com/authorizations
+        )
+  token="$(parse_token token "$resp")"
+  id=$(parse_token id "$resp")
+  if [[ -z "$token" ]]; then
+    echo "Failed to get OAuth token"
+    die "$resp"
+  fi
+
+  echo "USER=$user" > "$authfile"
+  echo "TOKEN=$token" >> "$authfile"
+  echo "ID=$id" >> "$authfile"
+  exit 0
 fi
 
-user="$1"
-[ -z "$user" ] && die "GitHub username required"
+if [[ -z "$offline" ]]; then
+  [[ -e "$authfile" ]] && . "$authfile"
+  [[ -z "$USER" || -z "$TOKEN" ]] && die "User/Auth-Token required.
+Run $0 -t <username> to acquire one"
+fi
 
-tag="$2"
+tag="$1"
 [ -z "$tag" ] && die "Version tag required"
 
 nightly=""
@@ -68,10 +92,10 @@ git commit -m "Bump version to $tag"
 echo "Uploading file"
 size="$(du -b "$path" | awk '{print $1}')"
 
-resp=$(curl -s -u "$user" \
+resp=$(curl -s -H "Authorization: token $TOKEN" \
             -d "{ \"name\": \"$file\", \
-                 \"size\": $size, \
-                 \"description\": \"Release version $tag\" }" \
+                  \"size\": $size, \
+                  \"description\": \"Release version $tag\" }" \
             https://api.github.com/repos/ygra/Diablo3ItemCollage/downloads
       )
 
