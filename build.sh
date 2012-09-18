@@ -87,7 +87,7 @@ echo "Preparing commit and tag"
 git add version
 git add ItemCollageUI/Properties/AssemblyInfo.cs
 git commit -m "Bump version to $tag"
-[ -n "$nightly"] && git tag "$tag"
+[ -n "$nightly" ] && git tag "$tag"
 
 echo "Uploading file"
 size="$(du -b "$path" | awk '{print $1}')"
