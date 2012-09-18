@@ -2,12 +2,12 @@
 set -e
 
 die () {
-	echo "$1"
-	exit 1
+  echo "$1"
+  exit 1
 }
 
 parse_token () {
-	echo "$2" | sed -nre "/^\\s*\"$1\":\\s*\"?/{s///;s/\"?,?\\s*$//;p}"
+  echo "$2" | sed -nre "/^\\s*\"$1\":\\s*\"?/{s///;s/\"?,?\\s*$//;p}"
 }
 
 authfile="$(dirname "$0")/.authtoken"
@@ -15,8 +15,8 @@ offline=
 
 if [[ "$1" == "-o" ]]; then
   # don't do any git stuff, don't upload the build
-	offline=1
-	shift
+  offline=1
+  shift
 elif [[ "$1" == "-t" ]]; then
   [[ -z "$2" ]] && die "Username required"
   user="$2"
@@ -48,12 +48,12 @@ tag="$1"
 
 nightly=""
 if [[ "$tag" = "nightly" ]]; then
-	tag="$(git describe)"
-	# cut off revision number
-	tag="${tag%-*}"
-	nightly=1
+  tag="$(git describe)"
+  # cut off revision number
+  tag="${tag%-*}"
+  nightly=1
 else
-	[ -n "$(git tag -l "$tag")" ] && die "Tag already exists"
+  [ -n "$(git tag -l "$tag")" ] && die "Tag already exists"
 fi
 
 # remove v prefix
@@ -100,9 +100,9 @@ resp=$(curl -s -H "Authorization: token $TOKEN" \
       )
 
 if [ -z "$(parse_token acl "$resp")" ]; then
-	echo "Failed to get AWS token"
-	echo "$resp"
-	die "Bad credentials?"
+  echo "Failed to get AWS token"
+  echo "$resp"
+  die "Bad credentials?"
 fi
 
 awsresp="$(curl -F "key=$(parse_token path "$resp")" \
