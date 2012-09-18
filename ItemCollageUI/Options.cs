@@ -8,7 +8,7 @@ using System.Text;
 
 namespace ItemCollage
 {
-    class Options : IDisposable, INotifyPropertyChanged
+    class Options : INotifyPropertyChanged
     {
         bool _topMost;
         bool _checkForUpdates;
@@ -16,6 +16,7 @@ namespace ItemCollage
         bool _collageToClipboard;
 
         private string settingsFile;
+        private bool dirty = false;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -26,6 +27,7 @@ namespace ItemCollage
             {
                 if (value != _topMost)
                 {
+                    dirty = true;
                     _topMost = value;
                     NotifyPropertyChanged("TopMost");
                 }
@@ -39,6 +41,7 @@ namespace ItemCollage
             {
                 if (value != _checkForUpdates)
                 {
+                    dirty = true;
                     _checkForUpdates = value;
                     NotifyPropertyChanged("CheckForUpdates");
                 }
@@ -52,6 +55,7 @@ namespace ItemCollage
             {
                 if (value != _itemToClipboard)
                 {
+                    dirty = true;
                     _itemToClipboard = value;
                     NotifyPropertyChanged("ItemToClipboard");
                 }
@@ -65,6 +69,7 @@ namespace ItemCollage
             {
                 if (value != _collageToClipboard)
                 {
+                    dirty = true;
                     _collageToClipboard = value;
                     NotifyPropertyChanged("CollageToClipboard");
                 }
@@ -102,12 +107,8 @@ namespace ItemCollage
             catch
             {
                 settingsFile = null;
+                dirty = true;
             }
-        }
-
-        ~Options()
-        {
-            Dispose();
         }
 
         private void NotifyPropertyChanged(string propertyName)
@@ -160,6 +161,9 @@ namespace ItemCollage
 
         public void Save()
         {
+            if (!dirty)
+                return;
+
             // write to the default settings file if none was read
             if (settingsFile == null)
             {
@@ -186,12 +190,5 @@ namespace ItemCollage
                     file.WriteLine("{0}={1}", prop.Name, prop.GetValue(this, null));
             }
         }
-
-        public void Dispose()
-        {
-            Save();
-        }
-
-
     }
 }

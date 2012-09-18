@@ -272,6 +272,7 @@ namespace ItemCollage
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            options.Save();
             foreach (var hk in hotkeys)
                 hk.Key.Unregister();
         }
