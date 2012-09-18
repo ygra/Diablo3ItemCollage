@@ -22,7 +22,6 @@ namespace ItemCollage
 
         private Size size;
         private List<CollageItem> collageItems;
-        private Font indexFont = new Font("Arial", 20, FontStyle.Bold);
 
         public Collage(IEnumerable<Item> items, int columns)
         {
@@ -64,6 +63,7 @@ namespace ItemCollage
 
             Bitmap bmp = new Bitmap(size.Width, size.Height, PixelFormat.Format16bppRgb555);
             using (Graphics g = Graphics.FromImage(bmp))
+            using (Font indexFont = new Font("Arial", 20, FontStyle.Bold))
             {
                 foreach (var item in collageItems)
                 {
