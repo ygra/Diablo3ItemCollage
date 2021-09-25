@@ -1,8 +1,8 @@
-#Item Collage
+# Item Collage
 
-![](http://i.imgur.com/R8RuO.png)
+![Screenshot of the program](http://i.imgur.com/R8RuO.png)
 
-##Usage
+## Usage
 
 Simply launch the program, point to an item in Diablo 3 and press F1. The item popup is automatically detected, cropped and captured. This also works for items anywhere else on the screen, such as items on the ground or linked items from the chat.
 
@@ -12,10 +12,10 @@ The *Collage* button (or pressing F2) will create a numbered layout of all captu
 
 Since v0.2 there is an automatic check for updates which will prompt a notification if a newer version is found.
 
-##Code
+## Code
 
 Better not look at it, it's horrible right now.
 
-##License
+## License
 
 This code is released under the MIT license. See [LICENSE](LICENSE).
