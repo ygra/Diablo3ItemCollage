@@ -1,4 +1,6 @@
-﻿using System;
+﻿using System.Globalization;
+using System.Runtime.CompilerServices;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -10,70 +12,36 @@ namespace ItemCollage
 {
     class Options : INotifyPropertyChanged
     {
-        bool _topMost;
-        bool _checkForUpdates;
-        bool _itemToClipboard;
-        bool _collageToClipboard;
+        Dictionary<string, object> _values = new();
 
-        private string settingsFile;
-        private bool dirty = false;
+        private string? settingsFile;
+        private bool dirty;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public bool TopMost
         {
-            get { return _topMost; }
-            set
-            {
-                if (value != _topMost)
-                {
-                    dirty = true;
-                    _topMost = value;
-                    NotifyPropertyChanged("TopMost");
-                }
-            }
+            get => GetValueOrDefault(true);
+            set => SetValue(value);
         }
 
         public bool CheckForUpdates
         {
-            get { return _checkForUpdates; }
-            set
-            {
-                if (value != _checkForUpdates)
-                {
-                    dirty = true;
-                    _checkForUpdates = value;
-                    NotifyPropertyChanged("CheckForUpdates");
-                }
-            }
+            get => GetValueOrDefault(true);
+            set => SetValue(value);
+
         }
 
         public bool ItemToClipboard
         {
-            get { return _itemToClipboard; }
-            set
-            {
-                if (value != _itemToClipboard)
-                {
-                    dirty = true;
-                    _itemToClipboard = value;
-                    NotifyPropertyChanged("ItemToClipboard");
-                }
-            }
+            get => GetValueOrDefault(true);
+            set => SetValue(value);
         }
 
         public bool CollageToClipboard
         {
-            get { return _collageToClipboard; }
-            set
-            {
-                if (value != _collageToClipboard)
-                {
-                    dirty = true;
-                    _collageToClipboard = value;
-                    NotifyPropertyChanged("CollageToClipboard");
-                }
-            }
+            get => GetValueOrDefault(true);
+            set => SetValue(value);
         }
 
         /// <summary>
@@ -94,15 +62,10 @@ namespace ItemCollage
         /// </param>
         public Options(string fileName)
         {
-            TopMost = true;
-            CheckForUpdates = true;
-            ItemToClipboard = true;
-            CollageToClipboard = true;
-
             settingsFile = fileName;
             try
             {
-                Load(File.ReadAllText(fileName));
+                Load(File.ReadAllLines(fileName));
             }
             catch
             {
@@ -111,19 +74,23 @@ namespace ItemCollage
             }
         }
 
-        private void NotifyPropertyChanged(string propertyName)
+        private T GetValueOrDefault<T>(T @default = default, [CallerMemberName] string key = null) =>
+            _values.TryGetValue(key, out var value) && value is T t ? t : @default;
+
+        private void SetValue(object value, [CallerMemberName] string key = null)
         {
-            if (PropertyChanged != null)
+            if (!_values.ContainsKey(key) || _values[key] != value)
             {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                dirty = true;
+                _values[key] = value;
+                NotifyPropertyChanged(key);
             }
         }
 
-        public void Load(string opt)
-        {
-            var lines = opt.Split(new[] { '\r', '\n' },
-                StringSplitOptions.RemoveEmptyEntries);
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
+        public void Load(IEnumerable<string> lines)
+        {
             foreach (var line in lines)
             {
                 try
@@ -132,18 +99,20 @@ namespace ItemCollage
                     var key = line.Substring(0, index);
                     var val = line.Substring(index + 1);
 
-                    switch (key.ToLowerInvariant())
+                    switch (key)
                     {
                         // conflate handling for all boolean properties
-                        case "topmost":
-                        case "checkforupdates":
-                        case "itemtoclipboard":
-                        case "collagetoclipboard":
-                            typeof(Options)
-                            .GetProperties()
-                            .First(p => p.Name.Equals(key,
-                                StringComparison.InvariantCultureIgnoreCase))
-                            .SetValue(this, bool.Parse(val), null);
+                        case "TopMost":
+                            TopMost = Convert.ToBoolean(val);
+                            break;
+                        case "CheckForUpdates":
+                            CheckForUpdates = Convert.ToBoolean(val);
+                            break;
+                        case "ItemToClipboard":
+                            ItemToClipboard = Convert.ToBoolean(val);
+                            break;
+                        case "CollageToClipboard":
+                            CollageToClipboard = Convert.ToBoolean(val);
                             break;
                     }
                 }
@@ -173,21 +142,12 @@ namespace ItemCollage
                     "settings.ini");
             }
 
-            var propertiesToIgnore = new List<string> { };
-
-            var propertiesToSave =
-                typeof(Options)
-                .GetProperties()
-                //.Where(p =>
-                //    !propertiesToIgnore.Contains(p.Name.ToLowerInvariant()))
-                .ToList();
-
             using (var file = new StreamWriter(File.Open(settingsFile,
                 FileMode.Create, FileAccess.Write, FileShare.Read),
                     Encoding.UTF8))
             {
-                foreach (var prop in propertiesToSave)
-                    file.WriteLine("{0}={1}", prop.Name, prop.GetValue(this, null));
+                foreach (var (key, value) in _values)
+                    file.WriteLine("{0}={1}", key, value);
             }
         }
     }

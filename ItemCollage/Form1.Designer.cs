@@ -73,7 +73,7 @@
             this.button2.TabIndex = 6;
             this.button2.Text = "Options";
             this.button2.UseVisualStyleBackColor = false;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.button2.Click += new System.EventHandler(this.OptionsButtonClicked);
             // 
             // linkLabel1
             // 
@@ -88,7 +88,7 @@
             this.linkLabel1.Text = "Clear List";
             this.linkLabel1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.linkLabel1.UseMnemonic = false;
-            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
+            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.ClearLinkClicked);
             // 
             // button1
             // 
@@ -103,11 +103,11 @@
             this.button1.TabIndex = 4;
             this.button1.Text = "Collage [F2]";
             this.button1.UseVisualStyleBackColor = false;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.button1.Click += new System.EventHandler(this.CollageButtonClicked);
             // 
             // lblHelp
             // 
-            this.lblHelp.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.lblHelp.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblHelp.AutoSize = true;
             this.lblHelp.ForeColor = System.Drawing.Color.Silver;
@@ -121,8 +121,8 @@
             // 
             // pnlOptions
             // 
-            this.pnlOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.pnlOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlOptions.Controls.Add(this.grpOptions);
             this.pnlOptions.Location = new System.Drawing.Point(12, 12);
@@ -133,8 +133,8 @@
             // 
             // grpOptions
             // 
-            this.grpOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.grpOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.grpOptions.BackColor = System.Drawing.Color.Black;
             this.grpOptions.Controls.Add(this.pnlInnerOptions);
@@ -149,8 +149,8 @@
             // 
             // pnlInnerOptions
             // 
-            this.pnlInnerOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.pnlInnerOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlInnerOptions.AutoScroll = true;
             this.pnlInnerOptions.Controls.Add(this.label1);
@@ -236,8 +236,8 @@
             this.itemListBox1.Name = "itemListBox1";
             this.itemListBox1.Size = new System.Drawing.Size(264, 290);
             this.itemListBox1.TabIndex = 4;
-            this.itemListBox1.MouseLeave += new System.EventHandler(this.itemListBox1_MouseLeave);
-            this.itemListBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.itemListBox1_MouseMove);
+            this.itemListBox1.MouseLeave += new System.EventHandler(this.ListMouseLeave);
+            this.itemListBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.ListMouseOver);
             // 
             // Form1
             // 
@@ -257,8 +257,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Item Collage";
             this.TopMost = true;
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
-            this.Load += new System.EventHandler(this.Form1_Load);
             this.pnlBottom.ResumeLayout(false);
             this.pnlBottom.PerformLayout();
             this.pnlOptions.ResumeLayout(false);

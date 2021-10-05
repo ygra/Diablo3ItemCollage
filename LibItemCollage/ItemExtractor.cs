@@ -295,11 +295,11 @@ namespace ItemCollage
                         // copy the matching and all neighboring pixels to get
                         // some kind of font anti-aliasing
                         var points = from dx in Helper.Range(-1, 1)
-                                        from dy in Helper.Range(-1, 1)
-                                        let fy = y + dy
-                                        let fx = x + dx
-                                        where fy >= 0 && fy < h && fx >= 0 && fx < w
-                                        select new { dx, dy };
+                                     from dy in Helper.Range(-1, 1)
+                                     let fy = y + dy
+                                     let fx = x + dx
+                                     where fy >= 0 && fy < h && fx >= 0 && fx < w
+                                     select new { dx, dy };
 
                         foreach (var d in points)
                         {
