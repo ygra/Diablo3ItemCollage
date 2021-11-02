@@ -8,7 +8,7 @@ namespace ItemCollage
 {
     public class ItemExtractor
     {
-        private Bitmap bmp;
+        private readonly Bitmap bmp;
         private Point cursorPos;
 
         private const int MaxSkip = 2;
@@ -27,7 +27,10 @@ namespace ItemCollage
             var rect = new Rectangle(0, p.Y, bmp.Width, 1);
             using (var data = new LockData(bmp, rect))
             {
-                if (!data.IsBlackAt(p.X)) return new Rectangle();
+                if (!data.IsBlackAt(p.X))
+                {
+                    return new Rectangle();
+                }
 
                 left = Helper.Range(p.X, 0, -1)
                     .TakeWhile(x => data.IsBlackAt(x))
@@ -192,7 +195,9 @@ namespace ItemCollage
         public Item ExtractItem(bool withTitle = true)
         {
             if (ItemFrame == new Rectangle() && !this.FindItem())
+            {
                 return null;
+            }
 
             Bitmap image = new Bitmap(ItemFrame.Width, ItemFrame.Height,
                 PixelFormat.Format24bppRgb);
@@ -202,8 +207,10 @@ namespace ItemCollage
                 g.DrawImage(bmp, targetFrame, ItemFrame, GraphicsUnit.Pixel);
             }
 
-            var item = new Item();
-            item.Image = image;
+            var item = new Item
+            {
+                Image = image
+            };
 
             if (withTitle)
             {
@@ -216,10 +223,7 @@ namespace ItemCollage
             return item;
         }
 
-        public static Bitmap ExtractItemName(Bitmap item)
-        {
-            return ExtractItemTitle(ExtractTitleFrame(item));
-        }
+        public static Bitmap ExtractItemName(Bitmap item) => ExtractItemTitle(ExtractTitleFrame(item));
 
         public static Bitmap ExtractTitleFrame(Bitmap bmp)
         {
@@ -264,8 +268,7 @@ namespace ItemCollage
             var title = new Bitmap(width, height, PixelFormat.Format24bppRgb);
             using (Graphics g = Graphics.FromImage(title))
             {
-                g.DrawImage(bmp, new Rectangle(0, 0, width, height), targetFrame,
-                    GraphicsUnit.Pixel);
+                g.DrawImage(bmp, new Rectangle(0, 0, width, height), targetFrame, GraphicsUnit.Pixel);
             }
 
             return title;
@@ -288,7 +291,9 @@ namespace ItemCollage
                     for (var y = 0; y < h; y++)
                     {
                         if (map.IsBlackAt(x, y))
+                        {
                             continue;
+                        }
 
                         // copy the matching and all neighboring pixels to get
                         // some kind of font anti-aliasing
@@ -394,9 +399,12 @@ namespace ItemCollage
 
         unsafe private static void TraverseFill(LockData data, int x, int y)
         {
-            if (x < 0 || x >= data.Width) return;
-            if (y < 0 || y >= data.Height) return;
-            if (data.IsBlackAt(x, y)) return;
+            if (x < 0 || x >= data.Width ||
+                y < 0 || y >= data.Height ||
+                data.IsBlackAt(x, y))
+            {
+                return;
+            }
 
             data.SetBlack(x, y);
 

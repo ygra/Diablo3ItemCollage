@@ -113,13 +113,20 @@ namespace ItemCollage
                 // save picture for future testing
                 string baseName;
                 if (item == null)
+                {
                     baseName = $"itemat-{DateTime.UtcNow:yyyy-MM-dd-HH-mm-ss}-P{cursorPos.X}-{cursorPos.Y}";
+                }
                 else
+                {
                     baseName = $"itemat-{DateTime.UtcNow:yyyy-MM-dd-HH-mm-ss}-P{cursorPos.X}-{cursorPos.Y}-R{ie.ItemFrame.X}-{ie.ItemFrame.Y}-{ie.ItemFrame.Width}-{ie.ItemFrame.Height}";
+                }
 
                 var picFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
                 var testFolder = Path.Combine(picFolder, "ExtractTest");
-                if (!Directory.Exists(testFolder)) Directory.CreateDirectory(testFolder);
+                if (!Directory.Exists(testFolder))
+                {
+                    Directory.CreateDirectory(testFolder);
+                }
 
                 var file = Path.Combine(testFolder, baseName + ".in.png");
                 screen.Save(file);
@@ -149,7 +156,9 @@ namespace ItemCollage
             {
                 var key = (Keys)((int)m.LParam >> 16);
                 foreach (var hotkey in hotkeys.Where(hk => hk.Key.Key == key))
+                {
                     hotkey.Value();
+                }
             }
             base.WndProc(ref m);
         }
@@ -174,15 +183,6 @@ namespace ItemCollage
             }
         }
 
-        private void ItemClicked(object sender, EventArgs e)
-        {
-            if (items.Count == 0) return;
-
-            items.RemoveAt(items.Count - 1);
-
-            UpdateLabel();
-        }
-
         private void CreateCollage()
         {
             if (items.Count == 0)
@@ -196,7 +196,7 @@ namespace ItemCollage
             var b = collage.CreateCollage();
 
             var picFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-            var fileName = string.Format("items-{0:yyyyMMdd-HHmmss}.png", DateTime.Now);
+            var fileName = $"items-{DateTime.Now:yyyyMMdd-HHmmss}.png";
             var file = Path.Combine(picFolder, fileName);
             b.Save(file);
 
@@ -253,15 +253,9 @@ namespace ItemCollage
             tooltip.Location = location;
         }
 
-        private void ListMouseLeave(object sender, EventArgs e)
-        {
-            tooltip.Hide();
-        }
+        private void ListMouseLeave(object sender, EventArgs e) => tooltip.Hide();
 
-        private void ClearLinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            items.Clear();
-        }
+        private void ClearLinkClicked(object sender, LinkLabelLinkClickedEventArgs e) => items.Clear();
 
         private void ToggleOptions()
         {
@@ -277,10 +271,7 @@ namespace ItemCollage
             }
         }
 
-        private void OptionsButtonClicked(object sender, EventArgs e)
-        {
-            ToggleOptions();
-        }
+        private void OptionsButtonClicked(object sender, EventArgs e) => ToggleOptions();
 
         private async Task CheckForUpdates()
         {

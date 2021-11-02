@@ -17,7 +17,7 @@ namespace ItemCollage
 
     public class Collage
     {
-        private int columns;
+        private readonly int columns;
         private int itemWidth;
 
         private Size size;
@@ -59,7 +59,10 @@ namespace ItemCollage
 
         public Bitmap CreateCollage()
         {
-            if (collageItems == null || collageItems.Count() == 0) return null;
+            if (collageItems == null || collageItems.Count() == 0)
+            {
+                return null;
+            }
 
             Bitmap bmp = new Bitmap(size.Width, size.Height, PixelFormat.Format16bppRgb555);
             using (Graphics g = Graphics.FromImage(bmp))
@@ -71,8 +74,10 @@ namespace ItemCollage
 
                     // don't draw numbers for just a single item
                     if (collageItems.Count > 1)
+                    {
                         g.DrawString(item.Index.ToString(), indexFont, Brushes.White,
                             item.Pos.X + 10, item.Pos.Y + 10);
+                    }
                 }
             }
 

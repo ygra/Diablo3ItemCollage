@@ -26,10 +26,7 @@ namespace ItemCollage
             this.DoubleBuffered = true;
         }
 
-        private int GetListWidth()
-        {
-            return ClientRectangle.Width - xMargin;
-        }
+        private int GetListWidth() => ClientRectangle.Width - xMargin;
 
         protected override void OnMeasureItem(MeasureItemEventArgs e)
         {
@@ -50,22 +47,15 @@ namespace ItemCollage
         {
             base.OnMouseClick(e);
             var itemIndex = (short)IndexFromPoint(e.X, e.Y);
-            if (itemIndex == NoMatches) return;
+            if (itemIndex == NoMatches)
+            {
+                return;
+            }
 
             ItemClick?.Invoke(this, new ItemClickEventArgs
             {
                 Index = itemIndex
             });
-        }
-
-        protected override void OnMouseMove(MouseEventArgs e)
-        {
-            base.OnMouseMove(e);
-        }
-
-        protected override void OnMouseLeave(EventArgs e)
-        {
-            base.OnMouseLeave(e);
         }
 
         private double GetScalingFactor(int titleWidth)
@@ -96,7 +86,10 @@ namespace ItemCollage
 
         protected override void OnDrawItem(DrawItemEventArgs e)
         {
-            if (e.Index < 0 || e.Index >= Items.Count) return;
+            if (e.Index < 0 || e.Index >= Items.Count)
+            {
+                return;
+            }
 
             var item = (Item)this.Items[e.Index];
 

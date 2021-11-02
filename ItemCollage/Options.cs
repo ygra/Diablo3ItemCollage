@@ -119,8 +119,7 @@ namespace ItemCollage
 
         private static string GetApplicationDirectory()
         {
-            var appdata = Environment.GetFolderPath(
-                Environment.SpecialFolder.ApplicationData);
+            var appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var foldername = Path.Combine(appdata, "D3IC");
             return foldername;
         }
@@ -128,7 +127,9 @@ namespace ItemCollage
         public void Save()
         {
             if (!dirty)
+            {
                 return;
+            }
 
             // write to the default settings file if none was read
             if (settingsFile == null)
@@ -144,7 +145,9 @@ namespace ItemCollage
                     Encoding.UTF8))
             {
                 foreach (var entry in _values)
+                {
                     file.WriteLine("{0}={1}", entry.Key, entry.Value);
+                }
             }
         }
     }

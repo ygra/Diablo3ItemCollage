@@ -15,13 +15,7 @@ namespace ItemCollage
             ShowInTaskbar = false;
         }
 
-        protected override bool ShowWithoutActivation
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool ShowWithoutActivation => true;
 
         protected override void OnPaintBackground(PaintEventArgs e)
         {
@@ -33,10 +27,7 @@ namespace ItemCollage
 
         public Image Image
         {
-            get
-            {
-                return image;
-            }
+            get => image;
             set
             {
                 if (image == value) return;
