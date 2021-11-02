@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -8,7 +7,6 @@ namespace ItemCollage
 {
     public class ItemListBox : ListBox
     {
-        const int titleCount = 50;
         const int xMargin = 4;
         const int yMargin = 2;
 
@@ -54,7 +52,7 @@ namespace ItemCollage
             var itemIndex = (short)IndexFromPoint(e.X, e.Y);
             if (itemIndex == NoMatches) return;
 
-            if (ItemClick != null) ItemClick(this, new ItemClickEventArgs
+            ItemClick?.Invoke(this, new ItemClickEventArgs
             {
                 Index = itemIndex
             });

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Drawing;
-using System.Drawing.Imaging;
 
 namespace ItemCollage
 {
@@ -31,7 +29,7 @@ namespace ItemCollage
 
         public class FuncEqualityComparer<TSource, TResult> : EqualityComparer<TSource>
         {
-            Func<TSource, TResult> func;
+            readonly Func<TSource, TResult> func;
             public FuncEqualityComparer(Func<TSource, TResult> func)
             {
                 this.func = func;
@@ -70,8 +68,7 @@ namespace ItemCollage
         /* string */
         public static int ToInt(this string s)
         {
-            int x;
-            if (int.TryParse(s, out x)) return x;
+            if (int.TryParse(s, out int x)) return x;
 
             return 0;
         }

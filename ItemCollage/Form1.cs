@@ -14,9 +14,9 @@ namespace ItemCollage
     public partial class Form1 : Form
     {
         readonly IDictionary<GlobalHotkey, Action> hotkeys;
-        readonly BindingList<Item> items = new();
-        readonly ImageTooltip tooltip = new();
-        readonly Options options = new();
+        readonly BindingList<Item> items = new BindingList<Item>();
+        readonly ImageTooltip tooltip = new ImageTooltip();
+        readonly Options options = new Options();
 
         public Form1()
         {
@@ -81,7 +81,7 @@ namespace ItemCollage
             this.Opacity = 1;
 
             var ie = new ItemExtractor(screen, cursorPos);
-            Item? item = null;
+            Item item = null;
             try
             {
                 item = ie.ExtractItem();
@@ -93,7 +93,7 @@ namespace ItemCollage
 
             if (item == null)
             {
-                Status("No item found");
+                // Status("No item found");
             }
             else
             {
@@ -138,9 +138,9 @@ namespace ItemCollage
 
         private void UpdateLabel()
         {
-            Status(string.Format("{0} item{1}",
-                items.Count == 0 ? "No" : items.Count.ToString(),
-                items.Count != 1 ? "s" : ""));
+            // Status(string.Format("{0} item{1}",
+            //     items.Count == 0 ? "No" : items.Count.ToString(),
+            //     items.Count != 1 ? "s" : ""));
         }
 
         protected override void WndProc(ref Message m)
@@ -204,7 +204,7 @@ namespace ItemCollage
                 Clipboard.SetImage(b);
 
             items.Clear();
-            Status("Collage saved");
+            // Status("Collage saved");
         }
 
         private void CollageButtonClicked(object sender, EventArgs e)
@@ -275,10 +275,6 @@ namespace ItemCollage
             {
                 options.Save();
             }
-        }
-
-        private void Status(string s)
-        {
         }
 
         private void OptionsButtonClicked(object sender, EventArgs e)

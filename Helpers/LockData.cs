@@ -11,8 +11,8 @@ namespace ItemCollage
         public int Height { get { return Data.Height; } }
         public int Width { get { return Data.Width; } }
 
-        private Bitmap bitmap;
-        private int bytes;
+        private readonly Bitmap bitmap;
+        private readonly int bytes;
 
         public LockData(Bitmap bmp) : this(bmp, new Rectangle(0, 0, bmp.Width, bmp.Height)) { }
 

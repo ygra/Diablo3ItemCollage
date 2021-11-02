@@ -23,7 +23,7 @@ namespace ItemCollage
 
         public bool Unregister() => UnregisterHotKey(hWnd, id);
 
-        public override int GetHashCode() => HashCode.Combine(modifier, key, hWnd.ToInt32());
+        public override int GetHashCode() => ((modifier * 397) + (int)key) * 397 + hWnd.ToInt32();
 
         public Keys Key
         {

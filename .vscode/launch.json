@@ -14,6 +14,15 @@
       "cwd": "${workspaceFolder}"
     },
     {
+      "name": "Run Item Collage (.NET Framework)",
+      "type": "clr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/ItemCollage/bin/Debug/net47/ItemCollage.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
       "name": ".NET Core Attach",
       "type": "coreclr",
       "request": "attach"

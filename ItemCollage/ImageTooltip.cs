@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 using System.Drawing;
 
 namespace ItemCollage
@@ -29,7 +25,10 @@ namespace ItemCollage
 
         protected override void OnPaintBackground(PaintEventArgs e)
         {
-            e.Graphics.DrawImageUnscaled(image, 0, 0);
+            if (image != null)
+            {
+                e.Graphics.DrawImageUnscaled(image, 0, 0);
+            }
         }
 
         public Image Image

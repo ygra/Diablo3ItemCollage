@@ -10,14 +10,14 @@ namespace ItemCollage
 {
     public static class UpdateCheck
     {
-        private static readonly HttpClient httpClient = new();
+        private static readonly HttpClient httpClient = new HttpClient();
 
         const string UpdateUrl = "https://raw.github.com/ygra/Diablo3ItemCollage/master/version";
         const string ChangelogUrl = "https://raw.github.com/ygra/Diablo3ItemCollage/master/changelog";
         const string DownloadUrl = "https://github.com/ygra/Diablo3ItemCollage/downloads";
 
 
-        public static async Task<(bool UpdateAvailable, Version newVersion, string? Changelog)> IsUpdateAvailable()
+        public static async Task<(bool UpdateAvailable, Version newVersion, string Changelog)> IsUpdateAvailable()
         {
             var result = await httpClient.GetStringAsync(UpdateUrl);
 

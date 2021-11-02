@@ -1,23 +1,20 @@
-﻿using System.Globalization;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Text;
 
 namespace ItemCollage
 {
     class Options : INotifyPropertyChanged
     {
-        Dictionary<string, object> _values = new();
+        private readonly Dictionary<string, object> _values = new Dictionary<string, object>();
 
-        private string? settingsFile;
+        private string settingsFile;
         private bool dirty;
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public bool TopMost
         {
@@ -74,7 +71,7 @@ namespace ItemCollage
             }
         }
 
-        private T GetValueOrDefault<T>(T @default = default, [CallerMemberName] string key = null) =>
+        private T GetValueOrDefault<T>(T @default, [CallerMemberName] string key = null) =>
             _values.TryGetValue(key, out var value) && value is T t ? t : @default;
 
         private void SetValue(object value, [CallerMemberName] string key = null)
@@ -146,8 +143,8 @@ namespace ItemCollage
                 FileMode.Create, FileAccess.Write, FileShare.Read),
                     Encoding.UTF8))
             {
-                foreach (var (key, value) in _values)
-                    file.WriteLine("{0}={1}", key, value);
+                foreach (var entry in _values)
+                    file.WriteLine("{0}={1}", entry.Key, entry.Value);
             }
         }
     }
