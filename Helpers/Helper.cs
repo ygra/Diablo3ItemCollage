@@ -16,8 +16,9 @@ namespace ItemCollage
             if (start > end && step > 0 ||
                 start < end && step < 0 ||
                 step == 0)
-                throw new ArgumentException(string.Format(
-                    "Impossible range: {0} to {1} with step {2}", start, end, step));
+            {
+                throw new ArgumentException($"Impossible range: {start} to {end} with step {step}");
+            }
 
             int steps = (end - start) / step;
             int i, s;

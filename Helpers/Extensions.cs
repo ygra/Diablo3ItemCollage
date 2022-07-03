@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Drawing;
-using System.Drawing.Imaging;
 
 namespace ItemCollage
 {
@@ -31,7 +29,7 @@ namespace ItemCollage
 
         public class FuncEqualityComparer<TSource, TResult> : EqualityComparer<TSource>
         {
-            Func<TSource, TResult> func;
+            readonly Func<TSource, TResult> func;
             public FuncEqualityComparer(Func<TSource, TResult> func)
             {
                 this.func = func;
@@ -61,7 +59,9 @@ namespace ItemCollage
         public static bool IsBlackAt(this Bitmap b, int x, int y)
         {
             if (x < 0 || y < 0 || x >= b.Width || y >= b.Height)
+            {
                 return false;
+            }
 
             Color c = b.GetPixel(x, y);
             return c.R == 0 && c.G == 0 && c.B == 0;
@@ -70,17 +70,19 @@ namespace ItemCollage
         /* string */
         public static int ToInt(this string s)
         {
-            int x;
-            if (int.TryParse(s, out x)) return x;
-
-            return 0;
+            return int.TryParse(s, out int x) ? x : 0;
         }
 
         /* IntPtr */
         unsafe public static bool IsBlackAt(this IntPtr b, int x, int bytes)
         {
             for (var dx = 0; dx < bytes; dx++)
-                if (((byte*)b)[bytes * x + dx] != 0) return false;
+            {
+                if (((byte*)b)[bytes * x + dx] != 0)
+                {
+                    return false;
+                }
+            }
 
             return true;
         }

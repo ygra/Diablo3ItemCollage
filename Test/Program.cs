@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Test
 {
-    class ConsoleOutput
+    struct ConsoleOutput
     {
         public string Text { get; set; }
         public ConsoleColor? Color { get; set; }
@@ -34,37 +34,50 @@ namespace Test
         public void AddTime(double time)
         {
             ConsoleColor? color = null;
-            if (time > 0.2) color = ConsoleColor.Red;
-            else if (time > 0.1) color = ConsoleColor.Yellow;
+            if (time > 0.2)
+            {
+                color = ConsoleColor.Red;
+            }
+            else if (time > 0.1)
+            {
+                color = ConsoleColor.Yellow;
+            }
 
-            this.Add(string.Format("{0:F3}s", time), color);
+            Add($"{time:F3}s", color);
         }
 
         public void Print()
         {
             foreach (var output in this)
             {
-                if (output.Color.HasValue) Console.ForegroundColor = output.Color.Value;
-                else Console.ResetColor();
+                if (output.Color.HasValue)
+                {
+                    Console.ForegroundColor = output.Color.Value;
+                }
+                else
+                {
+                    Console.ResetColor();
+                }
+
                 Console.Write(output.Text);
             }
             Console.WriteLine();
 
-            this.Clear();
+            Clear();
         }
     }
 
     class Program
     {
-        static Regex cursorPattern = new Regex(@"P(?<x>\d+)-(?<y>\d+)");
-        static Regex itemPattern = new Regex(
+        static readonly Regex cursorPattern = new Regex(@"P(?<x>\d+)-(?<y>\d+)");
+        static readonly Regex itemPattern = new Regex(
             @"R(?<x>\d+)-(?<y>\d+)-(?<width>\d+)-(?<height>\d+)");
-        static string folderPath = Path.Combine(
+        static readonly string folderPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
             "ExtractTest");
 
-        static ConcurrentBag<double> extractTimes = new ConcurrentBag<double>();
-        static ConcurrentBag<double> extractTitleTimes = new ConcurrentBag<double>();
+        static readonly ConcurrentBag<double> extractTimes = new ConcurrentBag<double>();
+        static readonly ConcurrentBag<double> extractTitleTimes = new ConcurrentBag<double>();
 
         static int test = 0;
         static int success = 0;
@@ -73,7 +86,7 @@ namespace Test
 
         static bool verbose = true;
 
-        static object lockobj = new object();
+        static readonly object lockobj = new object();
 
         static void Main(string[] args)
         {
@@ -85,7 +98,9 @@ namespace Test
             }
 
             if (args.Contains("-q") || args.Contains("--quiet"))
+            {
                 verbose = false;
+            }
 
             var folder = new DirectoryInfo(folderPath);
             var files = folder.GetFiles("*.in.png");
@@ -111,7 +126,10 @@ namespace Test
                     extractTitleTimes.Where(t => t > 0.2).Count());
             }
 
-            if (fail > 0) Environment.ExitCode = 1;
+            if (fail > 0)
+            {
+                Environment.ExitCode = 1;
+            }
         }
 
         private static void TestFile(FileInfo input)
@@ -121,9 +139,10 @@ namespace Test
             var titlefile = infile.Replace(".in.png", ".title.png");
 
             Console.ResetColor();
-            var output = new ConsoleOutputList();
-            output.Add(string.Format("Test {0}/{1}... ",
-                Interlocked.Increment(ref test), numTests));
+            var output = new ConsoleOutputList
+            {
+                $"Test {Interlocked.Increment(ref test)}/{numTests}... "
+            };
 
             string reason = CompareItemExtraction(infile, outfile, titlefile, output);
             if (reason == "")
@@ -133,8 +152,7 @@ namespace Test
             }
             else
             {
-                output.Add(string.Format("failed ({0})\n{1}", reason, input.Name),
-                    ConsoleColor.Red);
+                output.Add($"failed ({reason})\n{input.Name}", ConsoleColor.Red);
                 Interlocked.Increment(ref fail);
             }
 
@@ -162,7 +180,7 @@ namespace Test
             {
                 if (exist)
                 {
-                    return string.Format("{0} not found", type);
+                    return $"{type} not found";
                 }
                 else
                 {
@@ -172,16 +190,14 @@ namespace Test
 
             if (!exist)
             {
-                return string.Format("unexpectedly found {0}", type);
+                return $"unexpectedly found {type}";
             }
 
             var expected = new Bitmap(file);
             if (expected.Width != bmp.Width ||
                 expected.Height != bmp.Height)
             {
-                return string.Format(
-                    "{0} dimension does not match, expected {1}/{2}, got {3}/{4}",
-                    type, expected.Width, expected.Height, bmp.Width, bmp.Height);
+                return $"{type} dimension does not match, expected {expected.Width}/{expected.Height}, got {bmp.Width}/{bmp.Height}";
             }
 
             unsafe
@@ -189,15 +205,15 @@ namespace Test
                 var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
                 var bytes = bmp.BytesPerPixel();
 
-                using(var expectedData = new LockData(expected, rect))
-                using(var resultData = new LockData(bmp, rect))
+                using (var expectedData = new LockData(expected, rect))
+                using (var resultData = new LockData(bmp, rect))
                 {
                     for (var y = 0; y < resultData.Data.Height; y++)
                     {
                         if (memcmp(resultData.Row(y), expectedData.Row(y),
                             resultData.Width * bytes) != 0)
                         {
-                            return string.Format("{0} bitmap data did not match", type);
+                            return $"{type} bitmap data did not match";
                         }
                     }
                 }
@@ -248,8 +264,7 @@ namespace Test
                 var itemMatch = itemPattern.Match(infile);
                 if (!itemMatch.Success)
                 {
-                    if (success) result = string.Format(
-                        "Unexpectedly found item at {0}", ie.ItemFrame);
+                    if (success) result = $"Unexpectedly found item at {ie.ItemFrame}";
                 }
                 else
                 {
@@ -262,8 +277,7 @@ namespace Test
                             itemMatch.Groups["height"].Value.ToInt());
                         var found = ie.ItemFrame;
 
-                        if (found != expected) result = string.Format(
-                             "Found item at {0}, expected {1}", found, expected);
+                        if (found != expected) result = $"Found item at {found}, expected {expected}";
                     }
                     else
                     {

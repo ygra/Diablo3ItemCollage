@@ -1,18 +1,22 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\LibItemCollage\LibItemCollage.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFrameworks>net47;net5.0-windows</TargetFrameworks>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net47'">
     <Reference Include="System.Windows.Forms"/>
+    <Reference Include="System.Net.Http"/>
   </ItemGroup>
+
+  <PropertyGroup>
+    <AssemblyVersion>0.2.2</AssemblyVersion>
+  </PropertyGroup>
 
 </Project>

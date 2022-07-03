@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -8,7 +7,6 @@ namespace ItemCollage
 {
     public class ItemListBox : ListBox
     {
-        const int titleCount = 50;
         const int xMargin = 4;
         const int yMargin = 2;
 
@@ -28,10 +26,7 @@ namespace ItemCollage
             this.DoubleBuffered = true;
         }
 
-        private int GetListWidth()
-        {
-            return ClientRectangle.Width - xMargin;
-        }
+        private int GetListWidth() => ClientRectangle.Width - xMargin;
 
         protected override void OnMeasureItem(MeasureItemEventArgs e)
         {
@@ -52,22 +47,15 @@ namespace ItemCollage
         {
             base.OnMouseClick(e);
             var itemIndex = (short)IndexFromPoint(e.X, e.Y);
-            if (itemIndex == NoMatches) return;
+            if (itemIndex == NoMatches)
+            {
+                return;
+            }
 
-            if (ItemClick != null) ItemClick(this, new ItemClickEventArgs
+            ItemClick?.Invoke(this, new ItemClickEventArgs
             {
                 Index = itemIndex
             });
-        }
-
-        protected override void OnMouseMove(MouseEventArgs e)
-        {
-            base.OnMouseMove(e);
-        }
-
-        protected override void OnMouseLeave(EventArgs e)
-        {
-            base.OnMouseLeave(e);
         }
 
         private double GetScalingFactor(int titleWidth)
@@ -98,7 +86,10 @@ namespace ItemCollage
 
         protected override void OnDrawItem(DrawItemEventArgs e)
         {
-            if (e.Index < 0 || e.Index >= Items.Count) return;
+            if (e.Index < 0 || e.Index >= Items.Count)
+            {
+                return;
+            }
 
             var item = (Item)this.Items[e.Index];
 
